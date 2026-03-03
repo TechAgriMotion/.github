@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TechAgriMotion – Agricultural Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green-deep: #0a1f0f;
+  --green-dark: #0d2a14;
+  --green-mid: #1a4a25;
+  --green-accent: #2d8a47;
+  --green-bright: #3db85f;
+  --green-glow: #4eff7a;
+  --gold: #c8a84b;
+  --gold-light: #e8c96e;
+  --cream: #f5f0e8;
+  --white: #ffffff;
+  --text-dim: rgba(245,240,232,0.55);
+  --text-mid: rgba(245,240,232,0.80);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--green-deep);
+  color: var(--cream);
+  overflow-x: hidden;
+}
+
+/* ─── NOISE TEXTURE OVERLAY ─── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.4;
+}
+
+/* ─── NAVBAR ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  padding: 18px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(10,31,15,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(45,138,71,0.2);
+}
+
+.nav-logo {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none;
+}
+.nav-logo img {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(77,255,122,0.25);
+}
+.nav-logo-text {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 1.1rem;
+  color: var(--cream); letter-spacing: -0.02em;
+}
+.nav-logo-text span { color: var(--green-bright); }
+
+.nav-links {
+  display: flex; align-items: center; gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 0.85rem; font-weight: 500;
+  color: var(--text-mid);
+  text-decoration: none;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--green-glow); }
+
+/* ─── LANGUAGE SWITCHER ─── */
+.lang-switcher {
+  display: flex; align-items: center; gap: 6px;
+  position: relative;
+}
+.lang-btn {
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(45,138,71,0.15);
+  border: 1px solid rgba(45,138,71,0.35);
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer; color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem; font-weight: 500;
+  transition: all 0.2s;
+}
+.lang-btn:hover { background: rgba(45,138,71,0.3); border-color: var(--green-bright); }
+.lang-btn .flag { font-size: 1.1rem; }
+
+.lang-dropdown {
+  position: absolute; top: calc(100% + 10px); right: 0;
+  background: #0d2a14;
+  border: 1px solid rgba(45,138,71,0.4);
+  border-radius: 12px;
+  overflow: hidden;
+  min-width: 160px;
+  opacity: 0; visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.25s ease;
+  z-index: 999;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.lang-dropdown.open { opacity: 1; visibility: visible; transform: translateY(0); }
+.lang-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: background 0.15s;
+  border-bottom: 1px solid rgba(45,138,71,0.15);
+}
+.lang-option:last-child { border-bottom: none; }
+.lang-option:hover { background: rgba(45,138,71,0.2); }
+.lang-option.active { color: var(--green-bright); }
+.lang-option .flag { font-size: 1.2rem; }
+
+/* ─── HERO ─── */
+#hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center;
+  padding: 120px 40px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* animated radial glow */
+#hero::after {
+  content: '';
+  position: absolute;
+  width: 800px; height: 800px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(61,184,95,0.12) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+@keyframes pulse-glow {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+}
+
+/* floating grid lines */
+.grid-bg {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(45,138,71,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45,138,71,0.07) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(45,138,71,0.15);
+  border: 1px solid rgba(45,138,71,0.4);
+  border-radius: 100px;
+  padding: 8px 20px;
+  font-size: 0.78rem; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--green-bright);
+  margin-bottom: 32px;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.8s ease both;
+}
+.badge-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green-glow);
+  box-shadow: 0 0 8px var(--green-glow);
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.8rem, 6vw, 5.5rem);
+  line-height: 1.0;
+  letter-spacing: -0.04em;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.8s 0.15s ease both;
+}
+.hero-title .line2 {
+  background: linear-gradient(135deg, var(--green-bright), var(--green-glow), var(--gold-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  max-width: 580px;
+  font-size: 1.1rem; font-weight: 300; line-height: 1.7;
+  color: var(--text-mid);
+  margin: 24px auto 0;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.8s 0.3s ease both;
+}
+
+.hero-cta {
+  display: flex; gap: 16px; justify-content: center;
+  margin-top: 48px;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.8s 0.45s ease both;
+  flex-wrap: wrap;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--green-accent), var(--green-bright));
+  color: white; border: none;
+  padding: 16px 36px; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  transition: all 0.25s;
+  box-shadow: 0 0 40px rgba(61,184,95,0.25);
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 60px rgba(61,184,95,0.4);
+}
+.btn-secondary {
+  background: transparent;
+  color: var(--cream); border: 1px solid rgba(245,240,232,0.25);
+  padding: 16px 36px; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; font-weight: 500;
+  cursor: pointer; text-decoration: none;
+  transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-secondary:hover {
+  border-color: rgba(245,240,232,0.6);
+  background: rgba(245,240,232,0.05);
+}
+
+.hero-stats {
+  display: flex; gap: 48px; justify-content: center;
+  margin-top: 72px;
+  position: relative; z-index: 1;
+  animation: fadeUp 0.8s 0.6s ease both;
+  flex-wrap: wrap;
+}
+.stat { text-align: center; }
+.stat-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.2rem; font-weight: 800;
+  color: var(--green-bright);
+  line-height: 1;
+}
+.stat-label {
+  font-size: 0.8rem; font-weight: 400;
+  color: var(--text-dim);
+  margin-top: 6px; letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── SECTIONS ─── */
+section { position: relative; z-index: 1; }
+
+.section-pad { padding: 100px 40px; }
+
+.section-label {
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--green-bright);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.03em; line-height: 1.1;
+}
+.section-sub {
+  font-size: 1.05rem; font-weight: 300; line-height: 1.7;
+  color: var(--text-mid); max-width: 560px;
+  margin-top: 16px;
+}
+.accent { color: var(--green-bright); }
+
+/* ─── ABOUT ─── */
+#about { background: linear-gradient(180deg, var(--green-deep) 0%, #0c2210 100%); }
+
+.about-grid {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 80px; align-items: center;
+}
+.about-visual {
+  position: relative;
+}
+.about-card {
+  background: rgba(45,138,71,0.1);
+  border: 1px solid rgba(45,138,71,0.25);
+  border-radius: 24px; padding: 40px;
+  backdrop-filter: blur(10px);
+}
+.about-card .big-icon { font-size: 4rem; margin-bottom: 20px; }
+.field-tag {
+  display: inline-block;
+  background: rgba(61,184,95,0.12);
+  border: 1px solid rgba(61,184,95,0.3);
+  border-radius: 6px; padding: 5px 12px;
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--green-bright); letter-spacing: 0.08em;
+  margin: 4px 4px 0 0;
+}
+.floating-metric {
+  position: absolute; background: var(--green-dark);
+  border: 1px solid rgba(45,138,71,0.4);
+  border-radius: 14px; padding: 14px 20px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+.floating-metric.top-right { top: -20px; right: -30px; }
+.floating-metric.bottom-left { bottom: -20px; left: -30px; }
+.metric-icon { font-size: 1.6rem; }
+.metric-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; color: var(--green-bright); }
+.metric-label { font-size: 0.75rem; color: var(--text-dim); }
+
+/* ─── PRODUCT ─── */
+#product {
+  background: var(--green-deep);
+  padding: 100px 40px;
+}
+.product-header { text-align: center; max-width: 700px; margin: 0 auto 64px; }
+
+.sensors-grid {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+.sensor-card {
+  background: rgba(13,42,20,0.7);
+  border: 1px solid rgba(45,138,71,0.2);
+  border-radius: 20px;
+  padding: 32px 28px;
+  position: relative; overflow: hidden;
+  transition: all 0.3s;
+}
+.sensor-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green-accent), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.sensor-card:hover {
+  border-color: rgba(61,184,95,0.45);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 40px rgba(61,184,95,0.08);
+}
+.sensor-card:hover::before { opacity: 1; }
+.sensor-icon { font-size: 2.4rem; margin-bottom: 20px; }
+.sensor-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+.sensor-desc { font-size: 0.88rem; line-height: 1.65; color: var(--text-mid); }
+.sensor-spec {
+  margin-top: 20px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.spec-item {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.78rem;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(45,138,71,0.15);
+}
+.spec-item:last-child { border-bottom: none; }
+.spec-label { color: var(--text-dim); }
+.spec-val { color: var(--green-bright); font-weight: 500; }
+
+/* ─── PLATFORM ─── */
+#platform { background: linear-gradient(180deg, #0c2210 0%, var(--green-deep) 100%); }
+
+.platform-grid {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1.2fr 1fr;
+  gap: 60px; align-items: center;
+}
+.platform-features { display: flex; flex-direction: column; gap: 20px; }
+.feature-row {
+  display: flex; gap: 20px; align-items: flex-start;
+  padding: 22px; border-radius: 16px;
+  border: 1px solid rgba(45,138,71,0.15);
+  transition: all 0.25s;
+}
+.feature-row:hover {
+  background: rgba(45,138,71,0.08);
+  border-color: rgba(45,138,71,0.3);
+}
+.feature-icon-wrap {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: rgba(45,138,71,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; flex-shrink: 0;
+}
+.feature-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 6px; }
+.feature-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.6; }
+
+.platform-mockup {
+  background: rgba(13,42,20,0.8);
+  border: 1px solid rgba(45,138,71,0.3);
+  border-radius: 24px; padding: 30px;
+  font-family: 'DM Sans', sans-serif;
+}
+.mockup-topbar {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 24px;
+}
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot.red { background: #ff5f57; }
+.dot.yellow { background: #febc2e; }
+.dot.green { background: #28c840; }
+.mockup-title { font-size: 0.8rem; color: var(--text-dim); margin-left: auto; }
+
+.chart-area { margin-bottom: 24px; }
+.chart-label { font-size: 0.72rem; color: var(--text-dim); margin-bottom: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
+.bar {
+  flex: 1; border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, var(--green-bright), var(--green-accent));
+  opacity: 0.85; transition: opacity 0.2s;
+  animation: barGrow 1s ease both;
+}
+@keyframes barGrow { from { height: 0 !important; } }
+
+.readings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.reading {
+  background: rgba(10,31,15,0.6); border: 1px solid rgba(45,138,71,0.2);
+  border-radius: 10px; padding: 14px;
+}
+.reading-label { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
+.reading-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.4rem; color: var(--cream); margin-top: 4px; }
+.reading-val span { font-size: 0.75rem; color: var(--text-dim); font-weight: 400; }
+.reading-bar { height: 3px; background: rgba(45,138,71,0.2); border-radius: 2px; margin-top: 10px; }
+.reading-fill { height: 100%; border-radius: 2px; background: var(--green-bright); }
+
+/* ─── TECHNOLOGY ─── */
+#technology { background: var(--green-deep); }
+.tech-center { max-width: 1000px; margin: 0 auto; text-align: center; }
+.tech-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 24px; margin-top: 56px;
+}
+.tech-card {
+  background: rgba(13,42,20,0.6);
+  border: 1px solid rgba(45,138,71,0.2);
+  border-radius: 20px; padding: 36px 28px;
+  text-align: left; transition: all 0.3s;
+}
+.tech-card:hover {
+  border-color: rgba(200,168,75,0.4);
+  box-shadow: 0 0 40px rgba(200,168,75,0.06);
+}
+.tech-num {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 3rem; color: rgba(45,138,71,0.2);
+  line-height: 1; margin-bottom: 20px;
+}
+.tech-card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 10px; }
+.tech-card-desc { font-size: 0.87rem; color: var(--text-mid); line-height: 1.65; }
+
+/* ─── INVESTORS ─── */
+#investors {
+  background: linear-gradient(135deg, #0c2210 0%, #0a1f0f 50%, #0e2a10 100%);
+  padding: 100px 40px;
+}
+.investors-inner { max-width: 1100px; margin: 0 auto; }
+.investors-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; margin-top: 56px; }
+
+.inv-text .section-sub { max-width: 100%; }
+.inv-cards { display: flex; flex-direction: column; gap: 16px; }
+.inv-card {
+  background: rgba(10,31,15,0.7);
+  border: 1px solid rgba(200,168,75,0.2);
+  border-radius: 16px; padding: 24px 28px;
+  display: flex; align-items: center; gap: 20px;
+  transition: all 0.25s;
+}
+.inv-card:hover { border-color: rgba(200,168,75,0.5); transform: translateX(6px); }
+.inv-card-icon { font-size: 2rem; flex-shrink: 0; }
+.inv-card-title { font-weight: 600; font-size: 0.95rem; color: var(--gold-light); }
+.inv-card-desc { font-size: 0.83rem; color: var(--text-dim); margin-top: 4px; line-height: 1.5; }
+
+.market-pills { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
+.market-pill {
+  background: rgba(200,168,75,0.1);
+  border: 1px solid rgba(200,168,75,0.3);
+  border-radius: 100px; padding: 8px 18px;
+  font-size: 0.82rem; color: var(--gold-light); font-weight: 500;
+}
+
+/* ─── TEAM ─── */
+#team { background: var(--green-deep); }
+.team-center { max-width: 900px; margin: 0 auto; text-align: center; }
+.team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 52px; }
+.team-card {
+  background: rgba(13,42,20,0.5);
+  border: 1px solid rgba(45,138,71,0.2);
+  border-radius: 20px; padding: 36px 24px;
+  text-align: center; transition: all 0.3s;
+}
+.team-card:hover { border-color: rgba(61,184,95,0.4); transform: translateY(-4px); }
+.team-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--green-accent), var(--green-bright));
+  margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+}
+.team-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+.team-role { font-size: 0.82rem; color: var(--green-bright); margin-top: 4px; }
+.team-bio { font-size: 0.83rem; color: var(--text-dim); margin-top: 12px; line-height: 1.6; }
+
+/* ─── CONTACT ─── */
+#contact { background: linear-gradient(180deg, var(--green-deep) 0%, #060f08 100%); padding: 100px 40px; }
+.contact-inner { max-width: 700px; margin: 0 auto; text-align: center; }
+.contact-card {
+  background: rgba(13,42,20,0.7);
+  border: 1px solid rgba(45,138,71,0.3);
+  border-radius: 24px; padding: 52px 48px;
+  margin-top: 48px;
+}
+.contact-input {
+  width: 100%; background: rgba(10,31,15,0.8);
+  border: 1px solid rgba(45,138,71,0.25);
+  border-radius: 12px; padding: 14px 18px;
+  color: var(--cream); font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem; margin-bottom: 14px;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.contact-input:focus { border-color: var(--green-bright); }
+.contact-input::placeholder { color: rgba(245,240,232,0.35); }
+textarea.contact-input { resize: vertical; min-height: 120px; }
+.contact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.btn-full { width: 100%; justify-content: center; margin-top: 6px; font-size: 1rem; padding: 18px; }
+
+.contact-links { display: flex; justify-content: center; gap: 20px; margin-top: 32px; flex-wrap: wrap; }
+.contact-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--text-mid); text-decoration: none;
+  font-size: 0.9rem; transition: color 0.2s;
+}
+.contact-link:hover { color: var(--green-bright); }
+
+/* ─── FOOTER ─── */
+footer {
+  background: #060f08;
+  border-top: 1px solid rgba(45,138,71,0.15);
+  padding: 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 20px;
+}
+.footer-brand { display: flex; align-items: center; gap: 10px; }
+.footer-brand img { width: 36px; height: 36px; border-radius: 8px; }
+.footer-brand span { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; }
+.footer-copy { font-size: 0.8rem; color: var(--text-dim); }
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 0.82rem; color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--green-bright); }
+
+/* ─── DIVIDER ─── */
+.divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(45,138,71,0.2), transparent); margin: 0; }
+
+/* ─── SCROLL REVEAL ─── */
+.reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .about-grid, .platform-grid, .investors-grid { grid-template-columns: 1fr; }
+  .sensors-grid { grid-template-columns: repeat(2, 1fr); }
+  .tech-grid { grid-template-columns: 1fr 1fr; }
+  .team-grid { grid-template-columns: 1fr 1fr; }
+  .contact-row { grid-template-columns: 1fr; }
+  nav { padding: 14px 20px; }
+  .section-pad { padding: 70px 24px; }
+  #hero { padding: 100px 24px 60px; }
+  .about-card .floating-metric { display: none; }
+}
+@media (max-width: 600px) {
+  .sensors-grid { grid-template-columns: 1fr; }
+  .tech-grid { grid-template-columns: 1fr; }
+  .team-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 28px; }
+  .contact-card { padding: 32px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── NAVBAR ─── -->
+<nav>
+  <a href="#hero" class="nav-logo">
+    <img src="logo.png" alt="TechAgriMotion Logo">
+    <span class="nav-logo-text">TechAgri<span>Motion</span></span>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#about" data-i18n="nav_about">Chi Siamo</a></li>
+    <li><a href="#product" data-i18n="nav_product">Prodotto</a></li>
+    <li><a href="#platform" data-i18n="nav_platform">Piattaforma</a></li>
+    <li><a href="#investors" data-i18n="nav_investors">Investitori</a></li>
+    <li><a href="#contact" data-i18n="nav_contact">Contatti</a></li>
+  </ul>
+
+  <div class="lang-switcher">
+    <button class="lang-btn" id="langToggle" onclick="toggleLang()">
+      <span class="flag" id="currentFlag">🇮🇹</span>
+      <span id="currentLangLabel">IT</span>
+      <span>▾</span>
+    </button>
+    <div class="lang-dropdown" id="langDropdown">
+      <div class="lang-option active" onclick="setLang('it')"><span class="flag">🇮🇹</span> Italiano</div>
+      <div class="lang-option" onclick="setLang('en')"><span class="flag">🇬🇧</span> English</div>
+      <div class="lang-option" onclick="setLang('de')"><span class="flag">🇩🇪</span> Deutsch</div>
+      <div class="lang-option" onclick="setLang('fr')"><span class="flag">🇫🇷</span> Français</div>
+      <div class="lang-option" onclick="setLang('es')"><span class="flag">🇪🇸</span> Español</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section id="hero">
+  <div class="grid-bg"></div>
+  <div class="hero-badge"><div class="badge-dot"></div><span data-i18n="badge">AgriTech · IoT · AI Monitoring</span></div>
+  <h1 class="hero-title">
+    <span class="line1" data-i18n="hero_title1">Il Futuro del</span><br>
+    <span class="line2" data-i18n="hero_title2">Monitoraggio Agricolo</span>
+  </h1>
+  <p class="hero-sub" data-i18n="hero_sub">
+    Tecnologia avanzata per monitorare insetti, temperatura, umidità e pioggia in tempo reale. Proteggi i tuoi raccolti, ottimizza le risorse e aumenta la produttività.
+  </p>
+  <div class="hero-cta">
+    <a href="#product" class="btn-primary" data-i18n="hero_cta1">🌿 Scopri il Prodotto</a>
+    <a href="https://github.com/TechAgriMotion" target="_blank" class="btn-secondary" data-i18n="hero_cta2">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-val" data-i18n="stat1_val">4+</div><div class="stat-label" data-i18n="stat1">Sensori Integrati</div></div>
+    <div class="stat"><div class="stat-val" data-i18n="stat2_val">RT</div><div class="stat-label" data-i18n="stat2">Monitoraggio Real-Time</div></div>
+    <div class="stat"><div class="stat-val" data-i18n="stat3_val">AI</div><div class="stat-label" data-i18n="stat3">Analisi Predittiva</div></div>
+    <div class="stat"><div class="stat-val" data-i18n="stat4_val">5</div><div class="stat-label" data-i18n="stat4">Lingue Supportate</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ─── ABOUT ─── -->
+<section id="about" class="section-pad">
+  <div class="about-grid">
+    <div class="about-text reveal">
+      <p class="section-label" data-i18n="about_label">Chi Siamo</p>
+      <h2 class="section-title" data-i18n="about_title">Tecnologia Agricola<br>per il <span class="accent">Futuro</span></h2>
+      <p class="section-sub" data-i18n="about_sub">TechAgriMotion nasce dall'unione di esperti in IoT, intelligenza artificiale e scienze agrarie. La nostra missione è fornire agli agricoltori gli strumenti tecnologici per aumentare la produttività riducendo i rischi.</p>
+      <div style="margin-top:28px">
+        <span class="field-tag">🌾 AgriTech</span>
+        <span class="field-tag">📡 IoT</span>
+        <span class="field-tag">🤖 AI/ML</span>
+        <span class="field-tag">🌍 Sostenibilità</span>
+        <span class="field-tag">📱 Mobile App</span>
+      </div>
+      <div style="margin-top:32px">
+        <a href="https://github.com/TechAgriMotion" target="_blank" class="btn-secondary" style="width:fit-content">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span data-i18n="view_github">Vedi su GitHub</span>
+        </a>
+      </div>
+    </div>
+    <div class="about-visual reveal">
+      <div class="about-card">
+        <div class="big-icon">🌱</div>
+        <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;margin-bottom:10px" data-i18n="about_card_title">Agricultural Intelligence Platform</h3>
+        <p style="font-size:0.88rem;color:var(--text-mid);line-height:1.65" data-i18n="about_card_desc">Un sistema completo di monitoraggio agricolo basato su sensori IoT avanzati, con interfaccia web intuitiva e applicazione mobile dedicata per iOS e Android.</p>
+      </div>
+      <div class="floating-metric top-right">
+        <div class="metric-icon">🌡️</div>
+        <div><div class="metric-val">24.3°C</div><div class="metric-label" data-i18n="temp_live">Temperatura Live</div></div>
+      </div>
+      <div class="floating-metric bottom-left">
+        <div class="metric-icon">🦟</div>
+        <div><div class="metric-val">3 sp.</div><div class="metric-label" data-i18n="insects_detected">Insetti Rilevati</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ─── PRODUCT ─── -->
+<section id="product" class="section-pad">
+  <div class="product-header reveal">
+    <p class="section-label" data-i18n="product_label">Sistema di Monitoraggio</p>
+    <h2 class="section-title" data-i18n="product_title">Quattro Sensori,<br><span class="accent">Un'Unica Piattaforma</span></h2>
+    <p class="section-sub" style="margin:16px auto 0" data-i18n="product_sub">Hardware proprietario con firmware ottimizzato per ambienti agricoli estremi. Connettività LoRa/WiFi/4G per qualsiasi scenario.</p>
+  </div>
+  <div class="sensors-grid">
+    <div class="sensor-card reveal">
+      <div class="sensor-icon">🦟</div>
+      <div class="sensor-name" data-i18n="sensor1_name">Monitoraggio Insetti</div>
+      <div class="sensor-desc" data-i18n="sensor1_desc">Rilevamento automatico e classificazione di specie di insetti dannosi tramite sensori ottici e AI. Allerta precoce per infestazioni.</div>
+      <div class="sensor-spec">
+        <div class="spec-item"><span class="spec-label" data-i18n="precision">Precisione</span><span class="spec-val">94%</span></div>
+        <div class="spec-item"><span class="spec-label" data-i18n="species">Specie</span><span class="spec-val">50+</span></div>
+        <div class="spec-item"><span class="spec-label">API</span><span class="spec-val">REST / MQTT</span></div>
+      </div>
+    </div>
+    <div class="sensor-card reveal">
+      <div class="sensor-icon">🌡️</div>
+      <div class="sensor-name" data-i18n="sensor2_name">Temperatura</div>
+      <div class="sensor-desc" data-i18n="sensor2_desc">Sonde di precisione per il monitoraggio della temperatura del suolo, dell'aria e del fogliame. Aggiornamento ogni 60 secondi.</div>
+      <div class="sensor-spec">
+        <div class="spec-item"><span class="spec-label" data-i18n="range">Range</span><span class="spec-val">-40°C ~ +85°C</span></div>
+        <div class="spec-item"><span class="spec-label" data-i18n="accuracy">Accuratezza</span><span class="spec-val">±0.1°C</span></div>
+        <div class="spec-item"><span class="spec-label" data-i18n="update">Aggiornamento</span><span class="spec-val">60s</span></div>
+      </div>
+    </div>
+    <div class="sensor-card reveal">
+      <div class="sensor-icon">💧</div>
+      <div class="sensor-name" data-i18n="sensor3_name">Umidità</div>
+      <div class="sensor-desc" data-i18n="sensor3_desc">Rilevamento di umidità dell'aria e del suolo con correlazione automatica per ottimizzare l'irrigazione e prevenire funghi e malattie.</div>
+      <div class="sensor-spec">
+        <div class="spec-item"><span class="spec-label" data-i18n="range">Range</span><span class="spec-val">0 ~ 100% RH</span></div>
+        <div class="spec-item"><span class="spec-label" data-i18n="accuracy">Accuratezza</span><span class="spec-val">±1.5%</span></div>
+        <div class="spec-item"><span class="spec-label" data-i18n="update">Aggiornamento</span><span class="spec-val">30s</span></div>
+      </div>
+    </div>
+    <div class="sensor-card reveal">
+      <div class="sensor-icon">🌧️</div>
+      <div class="sensor-name" data-i18n="sensor4_name">Precipitazioni</div>
+      <div class="sensor-desc" data-i18n="sensor4_desc">Pluviometro ad alta risoluzione con previsioni integrate e analisi storica per pianificare le operazioni agricole con precisione.</div>
+      <div class="sensor-spec">
+        <div class="spec-item"><span class="spec-label" data-i18n="resolution">Risoluzione</span><span class="spec-val">0.2mm</span></div>
+        <div class="spec-item"><span class="spec-label" data-i18n="max">Massimo</span><span class="spec-val">999mm/h</span></div>
+        <div class="spec-item"><span class="spec-label" data-i18n="forecast">Previsioni</span><span class="spec-val">7 giorni</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ─── PLATFORM ─── -->
+<section id="platform" class="section-pad">
+  <div class="platform-grid">
+    <div class="reveal">
+      <p class="section-label" data-i18n="platform_label">Interfaccia & App</p>
+      <h2 class="section-title" data-i18n="platform_title">Web Dashboard<br>& <span class="accent">App Mobile</span></h2>
+      <p class="section-sub" data-i18n="platform_sub">Accedi ai dati dei tuoi campi da qualsiasi dispositivo. Interfaccia web responsive e app nativa per iOS e Android con notifiche push in tempo reale.</p>
+      <div class="platform-features" style="margin-top:36px">
+        <div class="feature-row">
+          <div class="feature-icon-wrap">📊</div>
+          <div><div class="feature-title" data-i18n="feat1_title">Dashboard Real-Time</div><div class="feature-desc" data-i18n="feat1_desc">Visualizzazione live di tutti i sensori con grafici interattivi e storico dati illimitato.</div></div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-icon-wrap">🔔</div>
+          <div><div class="feature-title" data-i18n="feat2_title">Allerte Intelligenti</div><div class="feature-desc" data-i18n="feat2_desc">Notifiche push personalizzabili per soglie critiche di temperatura, umidità e presenza insetti.</div></div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-icon-wrap">🤖</div>
+          <div><div class="feature-title" data-i18n="feat3_title">Analisi Predittiva AI</div><div class="feature-desc" data-i18n="feat3_desc">Algoritmi di machine learning per prevedere infestazioni e condizioni meteo avverse.</div></div>
+        </div>
+        <div class="feature-row">
+          <div class="feature-icon-wrap">📱</div>
+          <div><div class="feature-title" data-i18n="feat4_title">App iOS & Android</div><div class="feature-desc" data-i18n="feat4_desc">Applicazione nativa ottimizzata per l'uso in campo con modalità offline e sync automatico.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="reveal">
+      <div class="platform-mockup">
+        <div class="mockup-topbar">
+          <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+          <div class="mockup-title">AgriMotion Dashboard v2.4</div>
+        </div>
+        <div class="chart-area">
+          <div class="chart-label" data-i18n="chart_label">Temperatura — Ultimi 7 giorni</div>
+          <div class="chart-bars">
+            <div class="bar" style="height:55%;animation-delay:0.1s"></div>
+            <div class="bar" style="height:70%;animation-delay:0.15s"></div>
+            <div class="bar" style="height:60%;animation-delay:0.2s"></div>
+            <div class="bar" style="height:80%;animation-delay:0.25s"></div>
+            <div class="bar" style="height:75%;animation-delay:0.3s"></div>
+            <div class="bar" style="height:90%;animation-delay:0.35s"></div>
+            <div class="bar" style="height:65%;animation-delay:0.4s"></div>
+          </div>
+        </div>
+        <div class="readings-grid">
+          <div class="reading">
+            <div class="reading-label" data-i18n="read_temp">Temperatura</div>
+            <div class="reading-val">24.3 <span>°C</span></div>
+            <div class="reading-bar"><div class="reading-fill" style="width:65%"></div></div>
+          </div>
+          <div class="reading">
+            <div class="reading-label" data-i18n="read_humid">Umidità</div>
+            <div class="reading-val">67 <span>%</span></div>
+            <div class="reading-bar"><div class="reading-fill" style="width:67%"></div></div>
+          </div>
+          <div class="reading">
+            <div class="reading-label" data-i18n="read_rain">Pioggia</div>
+            <div class="reading-val">2.4 <span>mm</span></div>
+            <div class="reading-bar"><div class="reading-fill" style="width:24%;background:var(--gold)"></div></div>
+          </div>
+          <div class="reading">
+            <div class="reading-label" data-i18n="read_insects">Insetti</div>
+            <div class="reading-val">3 <span data-i18n="spec_unit">sp.</span></div>
+            <div class="reading-bar"><div class="reading-fill" style="width:30%;background:#ff7b3d"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ─── TECHNOLOGY ─── -->
+<section id="technology" class="section-pad">
+  <div class="tech-center">
+    <div class="reveal">
+      <p class="section-label" data-i18n="tech_label">Stack Tecnologico</p>
+      <h2 class="section-title" data-i18n="tech_title">Architettura <span class="accent">Enterprise-Grade</span></h2>
+      <p class="section-sub" style="margin:16px auto 0;max-width:500px" data-i18n="tech_sub">Infrastruttura scalabile cloud-native progettata per gestire migliaia di dispositivi simultaneamente con latenza sub-secondo.</p>
+    </div>
+    <div class="tech-grid">
+      <div class="tech-card reveal">
+        <div class="tech-num">01</div>
+        <div class="tech-card-title" data-i18n="tech1_title">Hardware IoT Proprietario</div>
+        <div class="tech-card-desc" data-i18n="tech1_desc">Sensori progettati internamente con microcontrollori a basso consumo, connettività multi-protocollo (LoRa, WiFi, 4G/LTE) e autonomia di 2 anni a batteria.</div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-num">02</div>
+        <div class="tech-card-title" data-i18n="tech2_title">Cloud Backend Scalabile</div>
+        <div class="tech-card-desc" data-i18n="tech2_desc">Infrastruttura serverless su AWS/Azure con time-series database ottimizzato per dati IoT, API RESTful e webhook per integrazioni enterprise.</div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-num">03</div>
+        <div class="tech-card-title" data-i18n="tech3_title">AI & Machine Learning</div>
+        <div class="tech-card-desc" data-i18n="tech3_desc">Modelli di deep learning per classificazione insetti con trasferimento di conoscenza e aggiornamento continuo del modello tramite federated learning.</div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-num">04</div>
+        <div class="tech-card-title" data-i18n="tech4_title">Web App Progressiva</div>
+        <div class="tech-card-desc" data-i18n="tech4_desc">Dashboard React con WebSocket per aggiornamenti real-time, supporto offline tramite service workers e visualizzazioni dati con D3.js.</div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-num">05</div>
+        <div class="tech-card-title" data-i18n="tech5_title">App Mobile Nativa</div>
+        <div class="tech-card-desc" data-i18n="tech5_desc">Applicazioni native iOS (Swift) e Android (Kotlin) con sincronizzazione in background, notifiche push e modalità campo ottimizzata.</div>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-num">06</div>
+        <div class="tech-card-title" data-i18n="tech6_title">Open Source Core</div>
+        <div class="tech-card-desc" data-i18n="tech6_desc">Componenti fondamentali rilasciati come open source su GitHub per favorire l'adozione, la community e la trasparenza tecnologica.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ─── INVESTORS ─── -->
+<section id="investors">
+  <div class="investors-inner">
+    <div class="reveal" style="text-align:center;max-width:650px;margin:0 auto">
+      <p class="section-label" data-i18n="inv_label">Per gli Investitori</p>
+      <h2 class="section-title" data-i18n="inv_title">Un Mercato da <span style="color:var(--gold-light)">$22 Miliardi</span></h2>
+      <p class="section-sub" style="max-width:100%" data-i18n="inv_sub">L'AgriTech è il settore con la crescita più rapida nel venture capital europeo. TechAgriMotion è posizionata per catturare una quota significativa del mercato globale del precision farming.</p>
+      <div class="market-pills">
+        <div class="market-pill" data-i18n="pill1">🌍 Mercato Globale: $22B</div>
+        <div class="market-pill" data-i18n="pill2">📈 CAGR: 13.8%</div>
+        <div class="market-pill" data-i18n="pill3">🇪🇺 Focus: Europa</div>
+        <div class="market-pill" data-i18n="pill4">🏆 Early Mover Advantage</div>
+      </div>
+    </div>
+    <div class="investors-grid">
+      <div class="inv-cards reveal">
+        <div class="inv-card">
+          <div class="inv-card-icon">💰</div>
+          <div>
+            <div class="inv-card-title" data-i18n="inv1_title">Seed Round Aperto</div>
+            <div class="inv-card-desc" data-i18n="inv1_desc">Raccogliamo €800K per accelerare lo sviluppo hardware, espandere il team e lanciare il programma pilota con 50 aziende agricole partner.</div>
+          </div>
+        </div>
+        <div class="inv-card">
+          <div class="inv-card-icon">📊</div>
+          <div>
+            <div class="inv-card-title" data-i18n="inv2_title">Modello SaaS + Hardware</div>
+            <div class="inv-card-desc" data-i18n="inv2_desc">Abbonamento mensile con hardware in vendita o leasing.</div>
+          </div>
+        </div>
+        <div class="inv-card">
+          <div class="inv-card-icon">🚀</div>
+          <div>
+            <div class="inv-card-title" data-i18n="inv3_title">Go-to-Market Validato</div>
+            <div class="inv-card-desc" data-i18n="inv3_desc">Accordi di distribuzione con 3 cooperative agricole regionali. Pipeline di 120 aziende interessate. Breakeven previsto Q3 2026.</div>
+          </div>
+        </div>
+        <div class="inv-card">
+          <div class="inv-card-icon">🌐</div>
+          <div>
+            <div class="inv-card-title" data-i18n="inv4_title">Scalabilità Globale</div>
+            <div class="inv-card-desc" data-i18n="inv4_desc">Architettura multi-tenant pronta per l'espansione internazionale. Localizzazione in 5 lingue. Conformità GDPR e normative EU.</div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal" style="display:flex;flex-direction:column;gap:24px">
+        <div style="background:rgba(200,168,75,0.08);border:1px solid rgba(200,168,75,0.25);border-radius:20px;padding:36px">
+          <div style="font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold-light);margin-bottom:20px" data-i18n="kpi_title">KPI Proiezione 2026</div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px">
+                <span data-i18n="kpi1">Farms attive</span><span style="color:var(--gold-light);font-weight:600">500</span>
+              </div>
+              <div style="height:4px;background:rgba(200,168,75,0.15);border-radius:2px"><div style="width:50%;height:100%;background:var(--gold);border-radius:2px"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px">
+                <span data-i18n="kpi2">MRR Target</span><span style="color:var(--gold-light);font-weight:600">€45K</span>
+              </div>
+              <div style="height:4px;background:rgba(200,168,75,0.15);border-radius:2px"><div style="width:45%;height:100%;background:var(--gold);border-radius:2px"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px">
+                <span data-i18n="kpi3">Sensori Deploy</span><span style="color:var(--gold-light);font-weight:600">2.000+</span>
+              </div>
+              <div style="height:4px;background:rgba(200,168,75,0.15);border-radius:2px"><div style="width:40%;height:100%;background:var(--gold);border-radius:2px"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px">
+                <span data-i18n="kpi4">NPS Score</span><span style="color:var(--gold-light);font-weight:600">72+</span>
+              </div>
+              <div style="height:4px;background:rgba(200,168,75,0.15);border-radius:2px"><div style="width:72%;height:100%;background:var(--gold);border-radius:2px"></div></div>
+            </div>
+          </div>
+        </div>
+        <a href="#contact" class="btn-primary" style="justify-content:center;font-size:1rem;padding:18px" data-i18n="inv_cta">📩 Richiedi il Pitch Deck</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ─── TEAM ─── -->
+<section id="team" class="section-pad">
+  <div class="team-center">
+    <div class="reveal">
+      <p class="section-label" data-i18n="team_label">Il Team</p>
+      <h2 class="section-title" data-i18n="team_title">Esperti <span class="accent">Multidisciplinari</span></h2>
+      <p class="section-sub" style="margin:16px auto 0" data-i18n="team_sub">Un team con competenze che spaziano dall'ingegneria embedded all'agronomia, dall'intelligenza artificiale al business development.</p>
+    </div>
+    <div class="team-grid">
+      <div class="team-card reveal">
+        <div class="team-avatar">👨‍💻</div>
+        <div class="team-name">Andrea</div>
+        <div class="team-role" data-i18n="role_cto">CTO & Co-Founder</div>
+        <div class="team-bio" data-i18n="bio1">Ingegnere software specializzato in IoT e sistemi embedded. Architetto dell'intera piattaforma TechAgriMotion.</div>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar">👨‍💻</div>
+        <div class="team-name">Stefano</div>
+        <div class="team-role" data-i18n="role_cto">CTO & Co-Founder</div>
+        <div class="team-bio" data-i18n="bio2">Ingegnere software specializzato.</div>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar">👨‍💻</div>
+        <div class="team-name">Francesco</div>
+        <div class="team-role" data-i18n="role_cto">CTO & Co-Founder</div>
+        <div class="team-bio" data-i18n="bio3">Ingegnere Hardware embedded.</div>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar">🌾</div>
+        <div class="team-name">Guido</div>
+        <div class="team-role" data-i18n="role_agro">Head of Agriculture & Co-Founder</div>
+        <div class="team-bio" data-i18n="bio4">Esperienza nei parassiti e nello studio delle farm.</div>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar">📈</div>
+        <div class="team-name">Luca</div>
+        <div class="team-role" data-i18n="role_agro">Head of Agriculture & Co-Founder</div>
+        <div class="team-bio" data-i18n="bio5">Esperienza nei parassiti e nello studio delle farm.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ─── CONTACT ─── -->
+<section id="contact">
+  <div class="contact-inner reveal">
+    <p class="section-label" data-i18n="contact_label">Contattaci</p>
+    <h2 class="section-title" data-i18n="contact_title">Costruiamo il<br><span class="accent">Futuro Insieme</span></h2>
+    <p class="section-sub" style="margin:16px auto 0" data-i18n="contact_sub">Sei un investitore, un distributore o un'azienda agricola? Scrivici per una demo o per richiedere il pitch deck ufficiale.</p>
+    <div class="contact-card">
+      <div class="contact-row">
+        <input type="text" class="contact-input" data-placeholder="name" placeholder="Nome / Nome Azienda">
+        <input type="email" class="contact-input" data-placeholder="email" placeholder="Email">
+      </div>
+      <input type="text" class="contact-input" data-placeholder="subject" placeholder="Oggetto (es. Richiesta Demo, Investimento)">
+      <textarea class="contact-input" data-placeholder="message" placeholder="Il tuo messaggio..."></textarea>
+      <button class="btn-primary btn-full" onclick="handleContact(this)">
+        <span data-i18n="send_btn">🚀 Invia Messaggio</span>
+      </button>
+    </div>
+    <div class="contact-links">
+      <a href="https://github.com/TechAgriMotion" target="_blank" class="contact-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+      <span class="contact-link">📧 info.techagrimotion@gmail.com</span>
+      <span class="contact-link">📍 Italy 🇮🇹</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-brand">
+    <img src="logo.png" alt="Logo">
+    <span>TechAgriMotion</span>
+  </div>
+  <div class="footer-copy">© 2026 TechAgriMotion. <span data-i18n="footer_rights">Tutti i diritti riservati.</span></div>
+  <div class="footer-links">
+    <a href="https://github.com/TechAgriMotion" target="_blank">GitHub</a>
+    <a href="#" data-i18n="footer_privacy">Privacy</a>
+    <a href="#" data-i18n="footer_terms">Termini</a>
+  </div>
+</footer>
+
+<script>
+// ─── TRANSLATIONS ───
+const i18n = {
+  it: {
+    nav_about:'Chi Siamo', nav_product:'Prodotto', nav_platform:'Piattaforma', nav_investors:'Investitori', nav_contact:'Contatti',
+    badge:'AgriTech · IoT · AI Monitoring',
+    hero_title1:'Il Futuro del', hero_title2:'Monitoraggio Agricolo',
+    hero_sub:'Tecnologia avanzata per monitorare insetti, temperatura, umidità e pioggia in tempo reale. Proteggi i tuoi raccolti, ottimizza le risorse e aumenta la produttività.',
+    hero_cta1:'🌿 Scopri il Prodotto', hero_cta2:'GitHub',
+    stat1_val:'4+', stat1:'Sensori Integrati', stat2_val:'RT', stat2:'Monitoraggio Real-Time', stat3_val:'AI', stat3:'Analisi Predittiva', stat4_val:'5', stat4:'Lingue Supportate',
+    about_label:'Chi Siamo', about_title:'Tecnologia Agricola<br>per il <span class="accent">Futuro</span>',
+    about_sub:'TechAgriMotion nasce dall\'unione di esperti in IoT, intelligenza artificiale e scienze agrarie. La nostra missione è fornire agli agricoltori gli strumenti tecnologici per aumentare la produttività riducendo i rischi.',
+    about_card_title:'Agricultural Intelligence Platform',
+    about_card_desc:'Un sistema completo di monitoraggio agricolo basato su sensori IoT avanzati, con interfaccia web intuitiva e applicazione mobile dedicata per iOS e Android.',
+    temp_live:'Temperatura Live', insects_detected:'Insetti Rilevati', view_github:'Vedi su GitHub',
+    product_label:'Sistema di Monitoraggio', product_title:'Quattro Sensori,<br><span class="accent">Un\'Unica Piattaforma</span>',
+    product_sub:'Hardware proprietario con firmware ottimizzato per ambienti agricoli estremi. Connettività LoRa/WiFi/4G per qualsiasi scenario.',
+    sensor1_name:'Monitoraggio Insetti', sensor1_desc:'Rilevamento automatico e classificazione di specie di insetti dannosi tramite sensori ottici e AI. Allerta precoce per infestazioni.',
+    sensor2_name:'Temperatura', sensor2_desc:'Sonde di precisione per il monitoraggio della temperatura del suolo, dell\'aria e del fogliame. Aggiornamento ogni 60 secondi.',
+    sensor3_name:'Umidità', sensor3_desc:'Rilevamento di umidità dell\'aria e del suolo con correlazione automatica per ottimizzare l\'irrigazione e prevenire funghi e malattie.',
+    sensor4_name:'Precipitazioni', sensor4_desc:'Pluviometro ad alta risoluzione con previsioni integrate e analisi storica per pianificare le operazioni agricole con precisione.',
+    precision:'Precisione', species:'Specie', range:'Range', accuracy:'Accuratezza', update:'Aggiornamento', resolution:'Risoluzione', max:'Massimo', forecast:'Previsioni',
+    platform_label:'Interfaccia & App', platform_title:'Web Dashboard<br>& <span class="accent">App Mobile</span>',
+    platform_sub:'Accedi ai dati dei tuoi campi da qualsiasi dispositivo. Interfaccia web responsive e app nativa per iOS e Android con notifiche push in tempo reale.',
+    feat1_title:'Dashboard Real-Time', feat1_desc:'Visualizzazione live di tutti i sensori con grafici interattivi e storico dati illimitato.',
+    feat2_title:'Allerte Intelligenti', feat2_desc:'Notifiche push personalizzabili per soglie critiche di temperatura, umidità e presenza insetti.',
+    feat3_title:'Analisi Predittiva AI', feat3_desc:'Algoritmi di machine learning per prevedere infestazioni e condizioni meteo avverse.',
+    feat4_title:'App iOS & Android', feat4_desc:'Applicazione nativa ottimizzata per l\'uso in campo con modalità offline e sync automatico.',
+    chart_label:'Temperatura — Ultimi 7 giorni',
+    read_temp:'Temperatura', read_humid:'Umidità', read_rain:'Pioggia', read_insects:'Insetti', spec_unit:'sp.',
+    tech_label:'Stack Tecnologico', tech_title:'Architettura <span class="accent">Enterprise-Grade</span>',
+    tech_sub:'Infrastruttura scalabile cloud-native progettata per gestire migliaia di dispositivi simultaneamente con latenza sub-secondo.',
+    tech1_title:'Hardware IoT Proprietario', tech1_desc:'Sensori progettati internamente con microcontrollori a basso consumo, connettività multi-protocollo (LoRa, WiFi, 4G/LTE) e autonomia di 2 anni a batteria.',
+    tech2_title:'Cloud Backend Scalabile', tech2_desc:'Infrastruttura serverless su AWS/Azure con time-series database ottimizzato per dati IoT, API RESTful e webhook per integrazioni enterprise.',
+    tech3_title:'AI & Machine Learning', tech3_desc:'Modelli di deep learning per classificazione insetti con trasferimento di conoscenza e aggiornamento continuo del modello tramite federated learning.',
+    tech4_title:'Web App Progressiva', tech4_desc:'Dashboard React con WebSocket per aggiornamenti real-time, supporto offline tramite service workers e visualizzazioni dati con D3.js.',
+    tech5_title:'App Mobile Nativa', tech5_desc:'Applicazioni native iOS (Swift) e Android (Kotlin) con sincronizzazione in background, notifiche push e modalità campo ottimizzata.',
+    tech6_title:'Open Source Core', tech6_desc:'Componenti fondamentali rilasciati come open source su GitHub per favorire l\'adozione, la community e la trasparenza tecnologica.',
+    inv_label:'Per gli Investitori', inv_title:'Un Mercato da <span style="color:var(--gold-light)">$22 Miliardi</span>',
+    inv_sub:'L\'AgriTech è il settore con la crescita più rapida nel venture capital europeo. TechAgriMotion è posizionata per catturare una quota significativa del mercato globale del precision farming.',
+    pill1:'🌍 Mercato Globale: $22B', pill2:'📈 CAGR: 13.8%', pill3:'🇪🇺 Focus: Europa', pill4:'🏆 Early Mover Advantage',
+    inv1_title:'Seed Round Aperto', inv1_desc:'Raccogliamo €800K per accelerare lo sviluppo hardware, espandere il team e lanciare il programma pilota con 50 aziende agricole partner.',
+    inv2_title:'Modello SaaS + Hardware', inv2_desc:'Abbonamento mensile con hardware in vendita o leasing.',
+    inv3_title:'Go-to-Market Validato', inv3_desc:'Accordi di distribuzione con 3 cooperative agricole regionali. Pipeline di 120 aziende interessate. Breakeven previsto Q1 2027.',
+    inv4_title:'Scalabilità Globale', inv4_desc:'Architettura multi-tenant pronta per l\'espansione internazionale. Localizzazione in 5 lingue. Conformità GDPR e normative EU.',
+    kpi_title:'KPI Proiezione 2026', kpi1:'Farms attive', kpi2:'MRR Target', kpi3:'Sensori Deploy', kpi4:'NPS Score',
+    inv_cta:'📩 Richiedi il Pitch Deck',
+    team_label:'Il Team', team_title:'Esperti <span class="accent">Multidisciplinari</span>',
+    team_sub:'Un team con competenze che spaziano dall\'ingegneria embedded all\'agronomia, dall\'intelligenza artificiale al business development.',
+    role_cto:'CTO & Co-Founder', role_agro:'Head of Agriculture & Co-Founder', role_biz:'CEO & Business Dev',
+    bio1:'Ingegnere software specializzato in IoT e sistemi embedded. Architetto dell\'intera piattaforma TechAgriMotion.',
+    bio2:'Ingegnere software specializzato.',
+    bio3:'Ingegnere Hardware embedded.',
+    bio4:'Esperienza nei parassiti e nello studio delle farm',
+    bio5:'Esperienza nei parassiti e nello studio delle farm',
+    contact_label:'Contattaci', contact_title:'Costruiamo il<br><span class="accent">Futuro Insieme</span>',
+    contact_sub:'Sei un investitore, un distributore o un\'azienda agricola? Scrivici per una demo o per richiedere il pitch deck ufficiale.',
+    send_btn:'🚀 Invia Messaggio',
+    footer_rights:'Tutti i diritti riservati.', footer_privacy:'Privacy', footer_terms:'Termini',
+    placeholder_name:'Nome / Nome Azienda', placeholder_email:'Email', placeholder_subject:'Oggetto', placeholder_message:'Il tuo messaggio...'
+  },
+  en: {
+    nav_about:'About', nav_product:'Product', nav_platform:'Platform', nav_investors:'Investors', nav_contact:'Contact',
+    badge:'AgriTech · IoT · AI Monitoring',
+    hero_title1:'The Future of', hero_title2:'Agricultural Monitoring',
+    hero_sub:'Advanced technology to monitor insects, temperature, humidity and rain in real time. Protect your crops, optimize resources and boost productivity.',
+    hero_cta1:'🌿 Discover the Product', hero_cta2:'GitHub',
+    stat1_val:'4+', stat1:'Integrated Sensors', stat2_val:'RT', stat2:'Real-Time Monitoring', stat3_val:'AI', stat3:'Predictive Analysis', stat4_val:'5', stat4:'Supported Languages',
+    about_label:'About Us', about_title:'Agricultural Technology<br>for the <span class="accent">Future</span>',
+    about_sub:'TechAgriMotion was born from the union of experts in IoT, artificial intelligence and agricultural sciences. Our mission is to provide farmers with the technological tools to increase productivity while reducing risks.',
+    about_card_title:'Agricultural Intelligence Platform',
+    about_card_desc:'A complete agricultural monitoring system based on advanced IoT sensors, with an intuitive web interface and dedicated mobile application for iOS and Android.',
+    temp_live:'Live Temperature', insects_detected:'Detected Insects', view_github:'View on GitHub',
+    product_label:'Monitoring System', product_title:'Four Sensors,<br><span class="accent">One Platform</span>',
+    product_sub:'Proprietary hardware with firmware optimized for extreme agricultural environments. LoRa/WiFi/4G connectivity for any scenario.',
+    sensor1_name:'Insect Monitoring', sensor1_desc:'Automatic detection and classification of harmful insect species via optical sensors and AI. Early warning for infestations.',
+    sensor2_name:'Temperature', sensor2_desc:'Precision probes for monitoring soil, air and foliage temperature. Updated every 60 seconds.',
+    sensor3_name:'Humidity', sensor3_desc:'Air and soil humidity detection with automatic correlation to optimize irrigation and prevent fungi and diseases.',
+    sensor4_name:'Rainfall', sensor4_desc:'High-resolution rain gauge with integrated forecasts and historical analysis to plan agricultural operations with precision.',
+    precision:'Accuracy', species:'Species', range:'Range', accuracy:'Precision', update:'Update', resolution:'Resolution', max:'Maximum', forecast:'Forecast',
+    platform_label:'Interface & App', platform_title:'Web Dashboard<br>& <span class="accent">Mobile App</span>',
+    platform_sub:'Access your field data from any device. Responsive web interface and native app for iOS and Android with real-time push notifications.',
+    feat1_title:'Real-Time Dashboard', feat1_desc:'Live display of all sensors with interactive charts and unlimited data history.',
+    feat2_title:'Smart Alerts', feat2_desc:'Customizable push notifications for critical thresholds of temperature, humidity and insect presence.',
+    feat3_title:'AI Predictive Analysis', feat3_desc:'Machine learning algorithms to predict infestations and adverse weather conditions.',
+    feat4_title:'iOS & Android App', feat4_desc:'Native app optimized for field use with offline mode and automatic sync.',
+    chart_label:'Temperature — Last 7 days',
+    read_temp:'Temperature', read_humid:'Humidity', read_rain:'Rain', read_insects:'Insects', spec_unit:'sp.',
+    tech_label:'Tech Stack', tech_title:'<span class="accent">Enterprise-Grade</span> Architecture',
+    tech_sub:'Scalable cloud-native infrastructure designed to manage thousands of devices simultaneously with sub-second latency.',
+    tech1_title:'Proprietary IoT Hardware', tech1_desc:'Internally designed sensors with low-power microcontrollers, multi-protocol connectivity (LoRa, WiFi, 4G/LTE) and 2-year battery life.',
+    tech2_title:'Scalable Cloud Backend', tech2_desc:'Serverless infrastructure on AWS/Azure with time-series database optimized for IoT data, RESTful API and webhooks for enterprise integrations.',
+    tech3_title:'AI & Machine Learning', tech3_desc:'Deep learning models for insect classification with knowledge transfer and continuous model update via federated learning.',
+    tech4_title:'Progressive Web App', tech4_desc:'React dashboard with WebSocket for real-time updates, offline support via service workers and data visualizations with D3.js.',
+    tech5_title:'Native Mobile App', tech5_desc:'Native iOS (Swift) and Android (Kotlin) apps with background sync, push notifications and optimized field mode.',
+    tech6_title:'Open Source Core', tech6_desc:'Core components released as open source on GitHub to foster adoption, community and technological transparency.',
+    inv_label:'For Investors', inv_title:'A <span style="color:var(--gold-light)">$22 Billion</span> Market',
+    inv_sub:'AgriTech is the fastest growing sector in European venture capital. TechAgriMotion is positioned to capture a significant share of the global precision farming market.',
+    pill1:'🌍 Global Market: $22B', pill2:'📈 CAGR: 13.8%', pill3:'🇪🇺 Focus: Europe', pill4:'🏆 Early Mover Advantage',
+    inv1_title:'Seed Round Open', inv1_desc:'We are raising €800K to accelerate hardware development, expand the team and launch the pilot program with 50 partner farms.',
+    inv2_title:'SaaS + Hardware Model', inv2_desc:'Monthly subscription with hardware for sale or lease.',
+    inv3_title:'Validated Go-to-Market', inv3_desc:'Distribution agreements with 3 regional agricultural cooperatives. Pipeline of 120 interested companies. Expected breakeven Q1 2027.',
+    inv4_title:'Global Scalability', inv4_desc:'Multi-tenant architecture ready for international expansion. Localization in 5 languages. GDPR and EU regulatory compliance.',
+    kpi_title:'KPI Projection 2026', kpi1:'Active Farms', kpi2:'MRR Target', kpi3:'Sensors Deployed', kpi4:'NPS Score',
+    inv_cta:'📩 Request Pitch Deck',
+    team_label:'The Team', team_title:'<span class="accent">Multidisciplinary</span> Experts',
+    team_sub:'A team with expertise spanning embedded engineering, agronomy, artificial intelligence and business development.',
+    role_cto:'CTO & Co-Founder', role_agro:'Head of Agriculture & Co-Founder', role_biz:'CEO & Business Dev',
+    role_agro2:'Agricultural Specialist', role_agro3:'Field Research Specialist',
+    bio1:'Software engineer specialized in IoT and embedded systems. Architect of the entire TechAgriMotion platform.',
+    bio2:'Specialized software engineer.',
+    bio3:'Embedded hardware engineer.',
+    bio4:'Experience in pest management and farm research.',
+    bio5:'Experience in pest management and farm research.',
+    contact_label:'Contact Us', contact_title:'Let\'s Build the<br><span class="accent">Future Together</span>',
+    contact_sub:'Are you an investor, distributor or farming company? Write to us for a demo or to request the official pitch deck.',
+    send_btn:'🚀 Send Message',
+    footer_rights:'All rights reserved.', footer_privacy:'Privacy', footer_terms:'Terms',
+    placeholder_name:'Name / Company Name', placeholder_email:'Email', placeholder_subject:'Subject', placeholder_message:'Your message...'
+  },
+  de: {
+    nav_about:'Über uns', nav_product:'Produkt', nav_platform:'Plattform', nav_investors:'Investoren', nav_contact:'Kontakt',
+    badge:'AgriTech · IoT · KI-Überwachung',
+    hero_title1:'Die Zukunft der', hero_title2:'Landwirtschaftlichen Überwachung',
+    hero_sub:'Fortschrittliche Technologie zur Überwachung von Insekten, Temperatur, Luftfeuchtigkeit und Regen in Echtzeit. Schützen Sie Ihre Ernte und steigern Sie die Produktivität.',
+    hero_cta1:'🌿 Produkt entdecken', hero_cta2:'GitHub',
+    stat1_val:'4+', stat1:'Integrierte Sensoren', stat2_val:'RT', stat2:'Echtzeit-Überwachung', stat3_val:'KI', stat3:'Prädiktive Analyse', stat4_val:'5', stat4:'Unterstützte Sprachen',
+    about_label:'Über uns', about_title:'Landwirtschaftstechnologie<br>für die <span class="accent">Zukunft</span>',
+    about_sub:'TechAgriMotion entstand aus dem Zusammenschluss von Experten aus IoT, künstlicher Intelligenz und Agrarwissenschaften. Unsere Mission: Landwirten Werkzeuge zur Produktivitätssteigerung zu geben.',
+    about_card_title:'Agricultural Intelligence Platform',
+    about_card_desc:'Ein vollständiges landwirtschaftliches Überwachungssystem auf Basis fortschrittlicher IoT-Sensoren, mit intuitiver Weboberfläche und mobiler App für iOS und Android.',
+    temp_live:'Live-Temperatur', insects_detected:'Erkannte Insekten', view_github:'Auf GitHub ansehen',
+    product_label:'Überwachungssystem', product_title:'Vier Sensoren,<br><span class="accent">Eine Plattform</span>',
+    product_sub:'Proprietäre Hardware mit für extreme landwirtschaftliche Umgebungen optimierter Firmware. LoRa/WiFi/4G-Konnektivität für jedes Szenario.',
+    sensor1_name:'Insektenüberwachung', sensor1_desc:'Automatische Erkennung und Klassifizierung schädlicher Insektenarten mittels optischer Sensoren und KI. Frühwarnung bei Schädlingsbefall.',
+    sensor2_name:'Temperatur', sensor2_desc:'Präzisionssonden zur Überwachung von Boden-, Luft- und Blatttemperatur. Aktualisierung alle 60 Sekunden.',
+    sensor3_name:'Luftfeuchtigkeit', sensor3_desc:'Luft- und Bodenfeuchtigkeitsmessung mit automatischer Korrelation zur Optimierung der Bewässerung und Vorbeugung von Pilzkrankheiten.',
+    sensor4_name:'Niederschlag', sensor4_desc:'Hochauflösender Regenmesser mit integrierten Prognosen und historischer Analyse für präzise landwirtschaftliche Planung.',
+    precision:'Genauigkeit', species:'Arten', range:'Bereich', accuracy:'Präzision', update:'Aktualisierung', resolution:'Auflösung', max:'Maximum', forecast:'Prognose',
+    platform_label:'Schnittstelle & App', platform_title:'Web-Dashboard<br>& <span class="accent">Mobile App</span>',
+    platform_sub:'Greifen Sie von jedem Gerät auf Ihre Felddaten zu. Responsive Weboberfläche und native App für iOS und Android mit Echtzeit-Push-Benachrichtigungen.',
+    feat1_title:'Echtzeit-Dashboard', feat1_desc:'Live-Anzeige aller Sensoren mit interaktiven Diagrammen und unbegrenztem Datenverlauf.',
+    feat2_title:'Intelligente Warnungen', feat2_desc:'Anpassbare Push-Benachrichtigungen für kritische Schwellenwerte bei Temperatur, Luftfeuchtigkeit und Insektenbefall.',
+    feat3_title:'KI-Prädiktivanalyse', feat3_desc:'Maschinelle Lernalgorithmen zur Vorhersage von Schädlingsbefall und ungünstigen Wetterbedingungen.',
+    feat4_title:'iOS & Android App', feat4_desc:'Für den Feldeinsatz optimierte native App mit Offline-Modus und automatischer Synchronisierung.',
+    chart_label:'Temperatur — Letzte 7 Tage',
+    read_temp:'Temperatur', read_humid:'Luftfeuchtigkeit', read_rain:'Regen', read_insects:'Insekten', spec_unit:'Sp.',
+    tech_label:'Tech-Stack', tech_title:'<span class="accent">Enterprise-Grade</span> Architektur',
+    tech_sub:'Skalierbare Cloud-native Infrastruktur für die gleichzeitige Verwaltung tausender Geräte mit Sub-Sekunden-Latenz.',
+    tech1_title:'Proprietäre IoT-Hardware', tech1_desc:'Intern entwickelte Sensoren mit stromsparenden Mikrocontrollern, Multi-Protokoll-Konnektivität (LoRa, WiFi, 4G/LTE) und 2 Jahren Batterielebensdauer.',
+    tech2_title:'Skalierbares Cloud-Backend', tech2_desc:'Serverlose Infrastruktur auf AWS/Azure mit für IoT-Daten optimierter Zeitreihendatenbank, RESTful API und Webhooks für Enterprise-Integrationen.',
+    tech3_title:'KI & Maschinelles Lernen', tech3_desc:'Deep-Learning-Modelle zur Insektenklassifizierung mit Wissenstransfer und kontinuierlicher Modellaktualisierung via Federated Learning.',
+    tech4_title:'Progressive Web App', tech4_desc:'React-Dashboard mit WebSocket für Echtzeit-Updates, Offline-Unterstützung via Service Worker und Datenvisualisierungen mit D3.js.',
+    tech5_title:'Native Mobile App', tech5_desc:'Native iOS (Swift) und Android (Kotlin) Apps mit Hintergrundsynchronisierung, Push-Benachrichtigungen und optimiertem Feldmodus.',
+    tech6_title:'Open-Source-Kern', tech6_desc:'Grundlegende Komponenten als Open Source auf GitHub veröffentlicht, um Akzeptanz, Community und technologische Transparenz zu fördern.',
+    inv_label:'Für Investoren', inv_title:'Ein <span style="color:var(--gold-light)">22-Milliarden-Dollar</span> Markt',
+    inv_sub:'AgriTech ist der am schnellsten wachsende Sektor im europäischen Risikokapital. TechAgriMotion ist positioniert, um einen bedeutenden Anteil am globalen Precision-Farming-Markt zu erobern.',
+    pill1:'🌍 Weltmarkt: 22 Mrd. $', pill2:'📈 CAGR: 13,8%', pill3:'🇪🇺 Fokus: Europa', pill4:'🏆 First-Mover-Vorteil',
+    inv1_title:'Seed-Runde offen', inv1_desc:'Wir sammeln 800.000 € ein, um die Hardware-Entwicklung zu beschleunigen, das Team zu erweitern und das Pilotprogramm mit 50 Partnerbetrieben zu starten.',
+    inv2_title:'SaaS + Hardware-Modell', inv2_desc:'Monatliches Abonnement mit Hardware zum Kauf oder Leasing.',
+    inv3_title:'Validierter Go-to-Market', inv3_desc:'Vertriebsvereinbarungen mit 3 regionalen Agrargenossenschaften. Pipeline von 120 interessierten Unternehmen. Breakeven erwartet Q1 2027.',
+    inv4_title:'Globale Skalierbarkeit', inv4_desc:'Multi-Tenant-Architektur für internationale Expansion. Lokalisierung in 5 Sprachen. DSGVO- und EU-Konformität.',
+    kpi_title:'KPI-Projektion 2026', kpi1:'Aktive Betriebe', kpi2:'MRR-Ziel', kpi3:'Eingesetzte Sensoren', kpi4:'NPS-Score',
+    inv_cta:'📩 Pitch Deck anfordern',
+    team_label:'Das Team', team_title:'<span class="accent">Multidisziplinäre</span> Experten',
+    team_sub:'Ein Team mit Kompetenzen von Embedded Engineering bis Agronomie, von künstlicher Intelligenz bis Business Development.',
+    role_cto:'CTO & Mitgründer', role_agro:'Leiter Landwirtschaft & Mitgründer', role_biz:'CEO & Business Dev',
+    role_agro2:'Landwirtschaftlicher Spezialist', role_agro3:'Feldforscher',
+    bio1:'Softwareingenieur spezialisiert auf IoT und eingebettete Systeme. Architekt der gesamten TechAgriMotion-Plattform.',
+    bio2:'Spezialisierter Softwareingenieur.',
+    bio3:'Embedded-Hardware-Ingenieur.',
+    bio4:'Erfahrung im Schädlingsmanagement und in der Farmforschung.',
+    bio5:'Erfahrung im Schädlingsmanagement und in der Farmforschung.',
+    contact_label:'Kontakt', contact_title:'Gemeinsam die<br><span class="accent">Zukunft gestalten</span>',
+    contact_sub:'Sind Sie Investor, Händler oder Landwirtschaftsbetrieb? Schreiben Sie uns für eine Demo oder um das offizielle Pitch Deck anzufordern.',
+    send_btn:'🚀 Nachricht senden',
+    footer_rights:'Alle Rechte vorbehalten.', footer_privacy:'Datenschutz', footer_terms:'AGB',
+    placeholder_name:'Name / Unternehmensname', placeholder_email:'E-Mail', placeholder_subject:'Betreff', placeholder_message:'Ihre Nachricht...'
+  },
+  fr: {
+    nav_about:'À propos', nav_product:'Produit', nav_platform:'Plateforme', nav_investors:'Investisseurs', nav_contact:'Contact',
+    badge:'AgriTech · IoT · Surveillance IA',
+    hero_title1:'L\'Avenir de la', hero_title2:'Surveillance Agricole',
+    hero_sub:'Technologie avancée pour surveiller les insectes, la température, l\'humidité et la pluie en temps réel. Protégez vos récoltes et augmentez la productivité.',
+    hero_cta1:'🌿 Découvrir le Produit', hero_cta2:'GitHub',
+    stat1_val:'4+', stat1:'Capteurs Intégrés', stat2_val:'TR', stat2:'Surveillance Temps Réel', stat3_val:'IA', stat3:'Analyse Prédictive', stat4_val:'5', stat4:'Langues Supportées',
+    about_label:'À propos', about_title:'Technologie Agricole<br>pour l\'<span class="accent">Avenir</span>',
+    about_sub:'TechAgriMotion est née de l\'union d\'experts en IoT, intelligence artificielle et sciences agricoles. Notre mission est de fournir aux agriculteurs des outils technologiques pour augmenter la productivité tout en réduisant les risques.',
+    about_card_title:'Agricultural Intelligence Platform',
+    about_card_desc:'Un système complet de surveillance agricole basé sur des capteurs IoT avancés, avec une interface web intuitive et une application mobile dédiée pour iOS et Android.',
+    temp_live:'Température en direct', insects_detected:'Insectes détectés', view_github:'Voir sur GitHub',
+    product_label:'Système de Surveillance', product_title:'Quatre Capteurs,<br><span class="accent">Une Seule Plateforme</span>',
+    product_sub:'Matériel propriétaire avec firmware optimisé pour les environnements agricoles extrêmes. Connectivité LoRa/WiFi/4G pour tous les scénarios.',
+    sensor1_name:'Surveillance des Insectes', sensor1_desc:'Détection automatique et classification des espèces d\'insectes nuisibles par capteurs optiques et IA. Alerte précoce pour les infestations.',
+    sensor2_name:'Température', sensor2_desc:'Sondes de précision pour surveiller la température du sol, de l\'air et du feuillage. Mise à jour toutes les 60 secondes.',
+    sensor3_name:'Humidité', sensor3_desc:'Détection de l\'humidité de l\'air et du sol avec corrélation automatique pour optimiser l\'irrigation et prévenir les champignons.',
+    sensor4_name:'Précipitations', sensor4_desc:'Pluviomètre haute résolution avec prévisions intégrées et analyse historique pour planifier les opérations agricoles avec précision.',
+    precision:'Précision', species:'Espèces', range:'Plage', accuracy:'Exactitude', update:'Mise à jour', resolution:'Résolution', max:'Maximum', forecast:'Prévisions',
+    platform_label:'Interface & App', platform_title:'Tableau de Bord Web<br>& <span class="accent">App Mobile</span>',
+    platform_sub:'Accédez aux données de vos champs depuis n\'importe quel appareil. Interface web responsive et app native pour iOS et Android avec notifications push en temps réel.',
+    feat1_title:'Tableau de Bord Temps Réel', feat1_desc:'Affichage en direct de tous les capteurs avec graphiques interactifs et historique illimité.',
+    feat2_title:'Alertes Intelligentes', feat2_desc:'Notifications push personnalisables pour les seuils critiques de température, humidité et présence d\'insectes.',
+    feat3_title:'Analyse Prédictive IA', feat3_desc:'Algorithmes d\'apprentissage automatique pour prédire les infestations et les conditions météo défavorables.',
+    feat4_title:'App iOS & Android', feat4_desc:'Application native optimisée pour l\'utilisation sur le terrain avec mode hors ligne et synchronisation automatique.',
+    chart_label:'Température — 7 derniers jours',
+    read_temp:'Température', read_humid:'Humidité', read_rain:'Pluie', read_insects:'Insectes', spec_unit:'esp.',
+    tech_label:'Stack Technologique', tech_title:'Architecture <span class="accent">Enterprise-Grade</span>',
+    tech_sub:'Infrastructure cloud-native évolutive conçue pour gérer des milliers d\'appareils simultanément avec une latence inférieure à la seconde.',
+    tech1_title:'Matériel IoT Propriétaire', tech1_desc:'Capteurs conçus en interne avec microcontrôleurs basse consommation, connectivité multi-protocole (LoRa, WiFi, 4G/LTE) et autonomie 2 ans.',
+    tech2_title:'Backend Cloud Évolutif', tech2_desc:'Infrastructure serverless sur AWS/Azure avec base de données time-series optimisée pour les données IoT, API RESTful et webhooks.',
+    tech3_title:'IA & Apprentissage Automatique', tech3_desc:'Modèles d\'apprentissage profond pour la classification des insectes avec transfert de connaissances et mise à jour continue du modèle.',
+    tech4_title:'Application Web Progressive', tech4_desc:'Tableau de bord React avec WebSocket pour les mises à jour en temps réel, support hors ligne via service workers et visualisations D3.js.',
+    tech5_title:'App Mobile Native', tech5_desc:'Applications natives iOS (Swift) et Android (Kotlin) avec synchronisation en arrière-plan, notifications push et mode terrain optimisé.',
+    tech6_title:'Noyau Open Source', tech6_desc:'Composants fondamentaux publiés en open source sur GitHub pour favoriser l\'adoption, la communauté et la transparence technologique.',
+    inv_label:'Pour les Investisseurs', inv_title:'Un Marché de <span style="color:var(--gold-light)">22 Milliards $</span>',
+    inv_sub:'L\'AgriTech est le secteur à la croissance la plus rapide du capital-risque européen. TechAgriMotion est positionnée pour capturer une part significative du marché mondial.',
+    pill1:'🌍 Marché mondial: 22Md$', pill2:'📈 TCAC: 13,8%', pill3:'🇪🇺 Focus: Europe', pill4:'🏆 Avantage précurseur',
+    inv1_title:'Tour de Table Seed Ouvert', inv1_desc:'Nous levons 800K€ pour accélérer le développement hardware, agrandir l\'équipe et lancer le programme pilote avec 50 fermes partenaires.',
+    inv2_title:'Modèle SaaS + Hardware', inv2_desc:'Abonnement mensuel avec matériel à la vente ou en location.',
+    inv3_title:'Go-to-Market Validé', inv3_desc:'Accords de distribution avec 3 coopératives agricoles régionales. Pipeline de 120 entreprises intéressées. Seuil de rentabilité prévu T1 2027.',
+    inv4_title:'Scalabilité Mondiale', inv4_desc:'Architecture multi-tenant prête pour l\'expansion internationale. Localisation en 5 langues. Conformité RGPD et réglementations UE.',
+    kpi_title:'Projection KPI 2026', kpi1:'Fermes actives', kpi2:'Objectif MRR', kpi3:'Capteurs déployés', kpi4:'Score NPS',
+    inv_cta:'📩 Demander le Pitch Deck',
+    team_label:'L\'Équipe', team_title:'Experts <span class="accent">Multidisciplinaires</span>',
+    team_sub:'Une équipe avec des compétences allant de l\'ingénierie embarquée à l\'agronomie, de l\'intelligence artificielle au développement commercial.',
+    role_cto:'CTO & Co-Fondateur', role_agro:'Responsable Agriculture & Co-Fondateur', role_biz:'CEO & Business Dev',
+    role_agro2:'Spécialiste Agricole', role_agro3:'Spécialiste Recherche Terrain',
+    bio1:'Ingénieur logiciel spécialisé en IoT et systèmes embarqués. Architecte de l\'ensemble de la plateforme TechAgriMotion.',
+    bio2:'Ingénieur logiciel spécialisé.',
+    bio3:'Ingénieur hardware embarqué.',
+    bio4:'Expérience en gestion des ravageurs et en recherche agricole.',
+    bio5:'Expérience en gestion des ravageurs et en recherche agricole.',
+    contact_label:'Contactez-nous', contact_title:'Construisons l\'<span class="accent">Avenir Ensemble</span>',
+    contact_sub:'Vous êtes investisseur, distributeur ou entreprise agricole? Écrivez-nous pour une démo ou pour demander le pitch deck officiel.',
+    send_btn:'🚀 Envoyer le Message',
+    footer_rights:'Tous droits réservés.', footer_privacy:'Confidentialité', footer_terms:'Conditions',
+    placeholder_name:'Nom / Nom de l\'entreprise', placeholder_email:'E-mail', placeholder_subject:'Objet', placeholder_message:'Votre message...'
+  },
+  es: {
+    nav_about:'Nosotros', nav_product:'Producto', nav_platform:'Plataforma', nav_investors:'Inversores', nav_contact:'Contacto',
+    badge:'AgriTech · IoT · Monitoreo IA',
+    hero_title1:'El Futuro del', hero_title2:'Monitoreo Agrícola',
+    hero_sub:'Tecnología avanzada para monitorear insectos, temperatura, humedad y lluvia en tiempo real. Protege tus cosechas y aumenta la productividad.',
+    hero_cta1:'🌿 Descubrir el Producto', hero_cta2:'GitHub',
+    stat1_val:'4+', stat1:'Sensores Integrados', stat2_val:'TR', stat2:'Monitoreo Tiempo Real', stat3_val:'IA', stat3:'Análisis Predictivo', stat4_val:'5', stat4:'Idiomas Soportados',
+    about_label:'Nosotros', about_title:'Tecnología Agrícola<br>para el <span class="accent">Futuro</span>',
+    about_sub:'TechAgriMotion nació de la unión de expertos en IoT, inteligencia artificial y ciencias agrarias. Nuestra misión es proporcionar a los agricultores herramientas tecnológicas para aumentar la productividad reduciendo los riesgos.',
+    about_card_title:'Agricultural Intelligence Platform',
+    about_card_desc:'Un sistema completo de monitoreo agrícola basado en sensores IoT avanzados, con interfaz web intuitiva y aplicación móvil dedicada para iOS y Android.',
+    temp_live:'Temperatura en Vivo', insects_detected:'Insectos Detectados', view_github:'Ver en GitHub',
+    product_label:'Sistema de Monitoreo', product_title:'Cuatro Sensores,<br><span class="accent">Una Sola Plataforma</span>',
+    product_sub:'Hardware propietario con firmware optimizado para entornos agrícolas extremos. Conectividad LoRa/WiFi/4G para cualquier escenario.',
+    sensor1_name:'Monitoreo de Insectos', sensor1_desc:'Detección automática y clasificación de especies de insectos dañinos mediante sensores ópticos e IA. Alerta temprana de infestaciones.',
+    sensor2_name:'Temperatura', sensor2_desc:'Sondas de precisión para monitorear la temperatura del suelo, aire y follaje. Actualización cada 60 segundos.',
+    sensor3_name:'Humedad', sensor3_desc:'Detección de humedad del aire y suelo con correlación automática para optimizar el riego y prevenir hongos y enfermedades.',
+    sensor4_name:'Precipitaciones', sensor4_desc:'Pluviómetro de alta resolución con previsiones integradas y análisis histórico para planificar operaciones agrícolas con precisión.',
+    precision:'Precisión', species:'Especies', range:'Rango', accuracy:'Exactitud', update:'Actualización', resolution:'Resolución', max:'Máximo', forecast:'Previsión',
+    platform_label:'Interfaz & App', platform_title:'Panel de Control Web<br>& <span class="accent">App Móvil</span>',
+    platform_sub:'Accede a los datos de tus campos desde cualquier dispositivo. Interfaz web responsiva y app nativa para iOS y Android con notificaciones push en tiempo real.',
+    feat1_title:'Panel en Tiempo Real', feat1_desc:'Visualización en vivo de todos los sensores con gráficos interactivos e historial de datos ilimitado.',
+    feat2_title:'Alertas Inteligentes', feat2_desc:'Notificaciones push personalizables para umbrales críticos de temperatura, humedad y presencia de insectos.',
+    feat3_title:'Análisis Predictivo IA', feat3_desc:'Algoritmos de aprendizaje automático para predecir infestaciones y condiciones climáticas adversas.',
+    feat4_title:'App iOS & Android', feat4_desc:'Aplicación nativa optimizada para uso en campo con modo sin conexión y sincronización automática.',
+    chart_label:'Temperatura — Últimos 7 días',
+    read_temp:'Temperatura', read_humid:'Humedad', read_rain:'Lluvia', read_insects:'Insectos', spec_unit:'esp.',
+    tech_label:'Stack Tecnológico', tech_title:'Arquitectura <span class="accent">Enterprise-Grade</span>',
+    tech_sub:'Infraestructura cloud-native escalable diseñada para gestionar miles de dispositivos simultáneamente con latencia de subsegundo.',
+    tech1_title:'Hardware IoT Propietario', tech1_desc:'Sensores diseñados internamente con microcontroladores de bajo consumo, conectividad multi-protocolo (LoRa, WiFi, 4G/LTE) y autonomía de 2 años.',
+    tech2_title:'Backend Cloud Escalable', tech2_desc:'Infraestructura serverless en AWS/Azure con base de datos de series temporales optimizada para IoT, API RESTful y webhooks.',
+    tech3_title:'IA & Aprendizaje Automático', tech3_desc:'Modelos de deep learning para clasificación de insectos con transferencia de conocimiento y actualización continua del modelo.',
+    tech4_title:'App Web Progresiva', tech4_desc:'Dashboard React con WebSocket para actualizaciones en tiempo real, soporte offline y visualizaciones de datos con D3.js.',
+    tech5_title:'App Móvil Nativa', tech5_desc:'Apps nativas iOS (Swift) y Android (Kotlin) con sincronización en segundo plano, notificaciones push y modo campo optimizado.',
+    tech6_title:'Núcleo Open Source', tech6_desc:'Componentes fundamentales publicados como código abierto en GitHub para fomentar adopción, comunidad y transparencia tecnológica.',
+    inv_label:'Para Inversores', inv_title:'Un Mercado de <span style="color:var(--gold-light)">22 Mil Millones $</span>',
+    inv_sub:'AgriTech es el sector de mayor crecimiento en el capital riesgo europeo. TechAgriMotion está posicionada para capturar una parte significativa del mercado global.',
+    pill1:'🌍 Mercado Global: $22B', pill2:'📈 CAGR: 13,8%', pill3:'🇪🇺 Foco: Europa', pill4:'🏆 Ventaja de Pionero',
+    inv1_title:'Ronda Seed Abierta', inv1_desc:'Recaudamos €800K para acelerar el desarrollo de hardware, ampliar el equipo y lanzar el programa piloto con 50 granjas asociadas.',
+    inv2_title:'Modelo SaaS + Hardware', inv2_desc:'Suscripción mensual con hardware en venta o arrendamiento.',
+    inv3_title:'Go-to-Market Validado', inv3_desc:'Acuerdos de distribución con 3 cooperativas agrícolas regionales. Pipeline de 120 empresas interesadas. Breakeven previsto T1 2027.',
+    inv4_title:'Escalabilidad Global', inv4_desc:'Arquitectura multi-tenant lista para expansión internacional. Localización en 5 idiomas. Cumplimiento GDPR y normativas UE.',
+    kpi_title:'Proyección KPI 2026', kpi1:'Granjas Activas', kpi2:'MRR Objetivo', kpi3:'Sensores Desplegados', kpi4:'NPS Score',
+    inv_cta:'📩 Solicitar Pitch Deck',
+    team_label:'El Equipo', team_title:'Expertos <span class="accent">Multidisciplinares</span>',
+    team_sub:'Un equipo con competencias que van desde la ingeniería embebida hasta la agronomía, desde la inteligencia artificial hasta el desarrollo empresarial.',
+    role_cto:'CTO & Cofundador', role_agro:'Director de Agricultura & Cofundador', role_biz:'CEO & Business Dev',
+    role_agro2:'Especialista Agrícola', role_agro3:'Especialista en Investigación de Campo',
+    bio1:'Ingeniero de software especializado en IoT y sistemas embebidos. Arquitecto de toda la plataforma TechAgriMotion.',
+    bio2:'Ingeniero de software especializado.',
+    bio3:'Ingeniero de hardware embebido.',
+    bio4:'Experiencia en gestión de plagas e investigación de granjas.',
+    bio5:'Experiencia en gestión de plagas e investigación de granjas.',
+    contact_label:'Contáctanos', contact_title:'Construyamos el<br><span class="accent">Futuro Juntos</span>',
+    contact_sub:'¿Eres inversor, distribuidor o empresa agrícola? Escríbenos para una demo o para solicitar el pitch deck oficial.',
+    send_btn:'🚀 Enviar Mensaje',
+    footer_rights:'Todos los derechos reservados.', footer_privacy:'Privacidad', footer_terms:'Términos',
+    placeholder_name:'Nombre / Nombre de empresa', placeholder_email:'Correo electrónico', placeholder_subject:'Asunto', placeholder_message:'Tu mensaje...'
+  }
+};
+
+const langMeta = {
+  it: { flag: '🇮🇹', label: 'IT' },
+  en: { flag: '🇬🇧', label: 'EN' },
+  de: { flag: '🇩🇪', label: 'DE' },
+  fr: { flag: '🇫🇷', label: 'FR' },
+  es: { flag: '🇪🇸', label: 'ES' }
+};
+
+let currentLang = 'it';
+
+function setLang(lang) {
+  currentLang = lang;
+  const t = i18n[lang];
+  const m = langMeta[lang];
+
+  // Update button
+  document.getElementById('currentFlag').textContent = m.flag;
+  document.getElementById('currentLangLabel').textContent = m.label;
+  document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
+  document.querySelector(`.lang-option[onclick="setLang('${lang}')"]`).classList.add('active');
+
+  // Update all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+
+  // Update placeholders
+  document.querySelectorAll('[data-placeholder]').forEach(el => {
+    const key = 'placeholder_' + el.getAttribute('data-placeholder');
+    if (t[key] !== undefined) el.placeholder = t[key];
+  });
+
+  // Update html lang
+  document.documentElement.lang = lang;
+
+  toggleLang(true); // close
+}
+
+function toggleLang(forceClose = false) {
+  const dd = document.getElementById('langDropdown');
+  if (forceClose) { dd.classList.remove('open'); return; }
+  dd.classList.toggle('open');
+}
+
+// Close on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.lang-switcher')) {
+    document.getElementById('langDropdown').classList.remove('open');
+  }
+});
+
+// ─── SCROLL REVEAL ───
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ─── CONTACT HANDLER ───
+function handleContact(btn) {
+  const msgs = { it:'✅ Messaggio inviato! Ti risponderemo presto.', en:'✅ Message sent! We\'ll reply soon.', de:'✅ Nachricht gesendet! Wir antworten bald.', fr:'✅ Message envoyé! Nous vous répondrons bientôt.', es:'✅ ¡Mensaje enviado! Te responderemos pronto.' };
+  btn.innerHTML = msgs[currentLang] || msgs.en;
+  btn.style.background = 'linear-gradient(135deg, #1a6b2e, #2d8a47)';
+  setTimeout(() => { btn.innerHTML = `<span data-i18n="send_btn">${i18n[currentLang].send_btn}</span>`; btn.style.background = ''; }, 3000);
+}
+
+// ─── LIVE SENSOR ANIMATION ───
+function updateLive() {
+  const temp = (22 + Math.random()*5).toFixed(1);
+  const humid = (60 + Math.random()*15).toFixed(0);
+  const rain = (Math.random()*5).toFixed(1);
+  const insects = Math.floor(Math.random()*5 + 1);
+  const vals = document.querySelectorAll('.reading-val');
+  if (vals[0]) vals[0].innerHTML = `${temp} <span>°C</span>`;
+  if (vals[1]) vals[1].innerHTML = `${humid} <span>%</span>`;
+  if (vals[2]) vals[2].innerHTML = `${rain} <span>mm</span>`;
+  if (vals[3]) vals[3].innerHTML = `${insects} <span data-i18n="spec_unit">${i18n[currentLang].spec_unit}</span>`;
+
+  const fills = document.querySelectorAll('.reading-fill');
+  if (fills[0]) fills[0].style.width = `${(parseFloat(temp)/50*100)}%`;
+  if (fills[1]) fills[1].style.width = `${humid}%`;
+  if (fills[2]) fills[2].style.width = `${parseFloat(rain)/10*100}%`;
+  if (fills[3]) fills[3].style.width = `${insects/8*100}%`;
+}
+setInterval(updateLive, 3000);
+</script>
+</body>
+</html>
