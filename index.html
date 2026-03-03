@@ -85,7 +85,18 @@ nav {
   display: flex; align-items: center; gap: 6px;
   position: relative;
 }
-.lang-btn {
+.flag-img {
+  width: 22px; height: 15px;
+  border-radius: 3px;
+  object-fit: cover;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+  flex-shrink: 0;
+}
+.flag-btn-img {
+  width: 24px; height: 16px;
+}
   display: flex; align-items: center; gap: 7px;
   background: rgba(45,138,71,0.15);
   border: 1px solid rgba(45,138,71,0.35);
@@ -512,6 +523,7 @@ section { position: relative; z-index: 1; }
 #team { background: var(--green-deep); }
 .team-center { max-width: 900px; margin: 0 auto; text-align: center; }
 .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 52px; }
+.team-grid-bottom { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px; margin-top: 28px; max-width: 640px; margin-left: auto; margin-right: auto; }
 .team-card {
   background: rgba(13,42,20,0.5);
   border: 1px solid rgba(45,138,71,0.2);
@@ -539,13 +551,31 @@ section { position: relative; z-index: 1; }
   border-radius: 24px; padding: 52px 48px;
   margin-top: 48px;
 }
+.input-wrap { position: relative; margin-bottom: 0; }
+.field-error {
+  display: block; font-size: 0.78rem; color: #ff6b6b;
+  margin-top: 4px; margin-bottom: 10px; min-height: 14px; padding-left: 2px;
+}
+.contact-input.error {
+  border-color: #ff6b6b !important;
+  box-shadow: 0 0 0 2px rgba(255,107,107,0.12);
+}
+.contact-input.valid { border-color: var(--green-bright) !important; }
+.cf-success-msg {
+  background: rgba(45,138,71,0.15);
+  border: 1px solid rgba(61,184,95,0.5);
+  border-radius: 12px; padding: 16px 20px;
+  font-size: 0.95rem; color: var(--green-bright);
+  text-align: center; margin-bottom: 14px;
+  animation: fadeUp 0.4s ease;
+}
 .contact-input {
   width: 100%; background: rgba(10,31,15,0.8);
   border: 1px solid rgba(45,138,71,0.25);
   border-radius: 12px; padding: 14px 18px;
   color: var(--cream); font-family: 'DM Sans', sans-serif;
-  font-size: 0.95rem; margin-bottom: 14px;
-  transition: border-color 0.2s;
+  font-size: 0.95rem; margin-bottom: 0;
+  transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
 }
 .contact-input:focus { border-color: var(--green-bright); }
@@ -593,6 +623,7 @@ footer {
   .sensors-grid { grid-template-columns: repeat(2, 1fr); }
   .tech-grid { grid-template-columns: 1fr 1fr; }
   .team-grid { grid-template-columns: 1fr 1fr; }
+  .team-grid-bottom { grid-template-columns: 1fr 1fr; }
   .contact-row { grid-template-columns: 1fr; }
   nav { padding: 14px 20px; }
   .section-pad { padding: 70px 24px; }
@@ -603,6 +634,7 @@ footer {
   .sensors-grid { grid-template-columns: 1fr; }
   .tech-grid { grid-template-columns: 1fr; }
   .team-grid { grid-template-columns: 1fr; }
+  .team-grid-bottom { grid-template-columns: 1fr; }
   .hero-stats { gap: 28px; }
   .contact-card { padding: 32px 24px; }
 }
@@ -626,17 +658,17 @@ footer {
   </ul>
 
   <div class="lang-switcher">
-    <button class="lang-btn" id="langToggle" onclick="toggleLang()">
-      <span class="flag" id="currentFlag">🇮🇹</span>
+    <button class="lang-btn" id="langToggle">
+      <img class="flag-img flag-btn-img" id="currentFlag" src="https://flagcdn.com/it.svg" alt="IT">
       <span id="currentLangLabel">IT</span>
       <span>▾</span>
     </button>
     <div class="lang-dropdown" id="langDropdown">
-      <div class="lang-option active" onclick="setLang('it')"><span class="flag">🇮🇹</span> Italiano</div>
-      <div class="lang-option" onclick="setLang('en')"><span class="flag">🇬🇧</span> English</div>
-      <div class="lang-option" onclick="setLang('de')"><span class="flag">🇩🇪</span> Deutsch</div>
-      <div class="lang-option" onclick="setLang('fr')"><span class="flag">🇫🇷</span> Français</div>
-      <div class="lang-option" onclick="setLang('es')"><span class="flag">🇪🇸</span> Español</div>
+      <div class="lang-option active" data-lang="it"><img class="flag-img" src="https://flagcdn.com/it.svg" alt="IT"> Italiano</div>
+      <div class="lang-option" data-lang="en"><img class="flag-img" src="https://flagcdn.com/gb.svg" alt="EN"> English</div>
+      <div class="lang-option" data-lang="de"><img class="flag-img" src="https://flagcdn.com/de.svg" alt="DE"> Deutsch</div>
+      <div class="lang-option" data-lang="fr"><img class="flag-img" src="https://flagcdn.com/fr.svg" alt="FR"> Français</div>
+      <div class="lang-option" data-lang="es"><img class="flag-img" src="https://flagcdn.com/es.svg" alt="ES"> Español</div>
     </div>
   </div>
 </nav>
@@ -654,7 +686,7 @@ footer {
   </p>
   <div class="hero-cta">
     <a href="#product" class="btn-primary" data-i18n="hero_cta1">🌿 Scopri il Prodotto</a>
-    <a href="https://github.com/TechAgriMotion" target="_blank" class="btn-secondary" data-i18n="hero_cta2">
+    <a href="https://github.com/TechAgriMotion" target="_blank" class="btn-secondary">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
       GitHub
     </a>
@@ -915,7 +947,7 @@ footer {
           <div class="inv-card-icon">🚀</div>
           <div>
             <div class="inv-card-title" data-i18n="inv3_title">Go-to-Market Validato</div>
-            <div class="inv-card-desc" data-i18n="inv3_desc">Accordi di distribuzione con 3 cooperative agricole regionali. Pipeline di 120 aziende interessate. Breakeven previsto Q3 2026.</div>
+            <div class="inv-card-desc" data-i18n="inv3_desc">Accordi di distribuzione con 3 cooperative agricole regionali. Pipeline di 120 aziende interessate. Breakeven previsto Q1 2027.</div>
           </div>
         </div>
         <div class="inv-card">
@@ -980,27 +1012,29 @@ footer {
         <div class="team-bio" data-i18n="bio1">Ingegnere software specializzato in IoT e sistemi embedded. Architetto dell'intera piattaforma TechAgriMotion.</div>
       </div>
       <div class="team-card reveal">
-        <div class="team-avatar">👨‍💻</div>
-        <div class="team-name">Stefano</div>
-        <div class="team-role" data-i18n="role_cto">CTO & Co-Founder</div>
+        <div class="team-avatar">🌾</div>
+        <div class="team-name">Software Engineer</div>
+        <div class="team-role" data-i18n="role_agro">Head of Agriculture & Co-Founder</div>
         <div class="team-bio" data-i18n="bio2">Ingegnere software specializzato.</div>
       </div>
       <div class="team-card reveal">
-        <div class="team-avatar">👨‍💻</div>
-        <div class="team-name">Francesco</div>
-        <div class="team-role" data-i18n="role_cto">CTO & Co-Founder</div>
+        <div class="team-avatar">🔧</div>
+        <div class="team-name">HW Engineer</div>
+        <div class="team-role" data-i18n="role_biz">CEO & Business Dev</div>
         <div class="team-bio" data-i18n="bio3">Ingegnere Hardware embedded.</div>
       </div>
+    </div>
+    <div class="team-grid-bottom">
       <div class="team-card reveal">
-        <div class="team-avatar">🌾</div>
-        <div class="team-name">Guido</div>
-        <div class="team-role" data-i18n="role_agro">Head of Agriculture & Co-Founder</div>
+        <div class="team-avatar">🦗</div>
+        <div class="team-name">Agronomo I</div>
+        <div class="team-role" data-i18n="role_agro2">Agricultural Specialist</div>
         <div class="team-bio" data-i18n="bio4">Esperienza nei parassiti e nello studio delle farm.</div>
       </div>
       <div class="team-card reveal">
-        <div class="team-avatar">📈</div>
-        <div class="team-name">Luca</div>
-        <div class="team-role" data-i18n="role_agro">Head of Agriculture & Co-Founder</div>
+        <div class="team-avatar">🔬</div>
+        <div class="team-name">Agronomo II</div>
+        <div class="team-role" data-i18n="role_agro3">Field Research Specialist</div>
         <div class="team-bio" data-i18n="bio5">Esperienza nei parassiti e nello studio delle farm.</div>
       </div>
     </div>
@@ -1017,13 +1051,26 @@ footer {
     <p class="section-sub" style="margin:16px auto 0" data-i18n="contact_sub">Sei un investitore, un distributore o un'azienda agricola? Scrivici per una demo o per richiedere il pitch deck ufficiale.</p>
     <div class="contact-card">
       <div class="contact-row">
-        <input type="text" class="contact-input" data-placeholder="name" placeholder="Nome / Nome Azienda">
-        <input type="email" class="contact-input" data-placeholder="email" placeholder="Email">
+        <div class="input-wrap">
+          <input type="text" id="cf-name" class="contact-input" data-placeholder="name" placeholder="Nome / Nome Azienda" oninput="clearError('cf-name')">
+          <span class="field-error" id="err-cf-name"></span>
+        </div>
+        <div class="input-wrap">
+          <input type="email" id="cf-email" class="contact-input" data-placeholder="email" placeholder="Email" oninput="clearError('cf-email')">
+          <span class="field-error" id="err-cf-email"></span>
+        </div>
       </div>
-      <input type="text" class="contact-input" data-placeholder="subject" placeholder="Oggetto (es. Richiesta Demo, Investimento)">
-      <textarea class="contact-input" data-placeholder="message" placeholder="Il tuo messaggio..."></textarea>
-      <button class="btn-primary btn-full" onclick="handleContact(this)">
-        <span data-i18n="send_btn">🚀 Invia Messaggio</span>
+      <div class="input-wrap">
+        <input type="text" id="cf-subject" class="contact-input" data-placeholder="subject" placeholder="Oggetto (es. Richiesta Demo, Investimento)" oninput="clearError('cf-subject')">
+        <span class="field-error" id="err-cf-subject"></span>
+      </div>
+      <div class="input-wrap">
+        <textarea id="cf-message" class="contact-input" data-placeholder="message" placeholder="Il tuo messaggio..." oninput="clearError('cf-message')"></textarea>
+        <span class="field-error" id="err-cf-message"></span>
+      </div>
+      <div id="cf-success" class="cf-success-msg" style="display:none"></div>
+      <button class="btn-primary btn-full" id="cf-submit" id="cf-submit-btn">
+        <span id="cf-btn-text" data-i18n="send_btn">🚀 Invia Messaggio</span>
       </button>
     </div>
     <div class="contact-links">
@@ -1032,7 +1079,7 @@ footer {
         GitHub
       </a>
       <a href="mailto:info.techagrimotion@gmail.com" class="contact-link">📧 info.techagrimotion@gmail.com</a>
-      <span class="contact-link">📍 Italy 🇮🇹</span>
+      <span class="contact-link">📍 Italy</span>
     </div>
   </div>
 </section>
@@ -1043,7 +1090,7 @@ footer {
     <img src="logo.png" alt="Logo">
     <span>TechAgriMotion</span>
   </div>
-  <div class="footer-copy">© 2026 TechAgriMotion. <span data-i18n="footer_rights">Tutti i diritti riservati.</span></div>
+  <div class="footer-copy">© 2025 TechAgriMotion. <span data-i18n="footer_rights">Tutti i diritti riservati.</span></div>
   <div class="footer-links">
     <a href="https://github.com/TechAgriMotion" target="_blank">GitHub</a>
     <a href="#" data-i18n="footer_privacy">Privacy</a>
@@ -1101,11 +1148,12 @@ const i18n = {
     team_label:'Il Team', team_title:'Esperti <span class="accent">Multidisciplinari</span>',
     team_sub:'Un team con competenze che spaziano dall\'ingegneria embedded all\'agronomia, dall\'intelligenza artificiale al business development.',
     role_cto:'CTO & Co-Founder', role_agro:'Head of Agriculture & Co-Founder', role_biz:'CEO & Business Dev',
+    role_agro2:'Agricultural Specialist', role_agro3:'Field Research Specialist',
     bio1:'Ingegnere software specializzato in IoT e sistemi embedded. Architetto dell\'intera piattaforma TechAgriMotion.',
     bio2:'Ingegnere software specializzato.',
     bio3:'Ingegnere Hardware embedded.',
-    bio4:'Esperienza nei parassiti e nello studio delle farm',
-    bio5:'Esperienza nei parassiti e nello studio delle farm',
+    bio4:'Esperienza nei parassiti e nello studio delle farm.',
+    bio5:'Esperienza nei parassiti e nello studio delle farm.',
     contact_label:'Contattaci', contact_title:'Costruiamo il<br><span class="accent">Futuro Insieme</span>',
     contact_sub:'Sei un investitore, un distributore o un\'azienda agricola? Scrivici per una demo o per richiedere il pitch deck ufficiale.',
     send_btn:'🚀 Invia Messaggio',
@@ -1351,92 +1399,184 @@ const i18n = {
 };
 
 const langMeta = {
-  it: { flag: '🇮🇹', label: 'IT' },
-  en: { flag: '🇬🇧', label: 'EN' },
-  de: { flag: '🇩🇪', label: 'DE' },
-  fr: { flag: '🇫🇷', label: 'FR' },
-  es: { flag: '🇪🇸', label: 'ES' }
+  it: { flag: 'https://flagcdn.com/it.svg', label: 'IT' },
+  en: { flag: 'https://flagcdn.com/gb.svg', label: 'EN' },
+  de: { flag: 'https://flagcdn.com/de.svg', label: 'DE' },
+  fr: { flag: 'https://flagcdn.com/fr.svg', label: 'FR' },
+  es: { flag: 'https://flagcdn.com/es.svg', label: 'ES' }
 };
 
 let currentLang = 'it';
 
+// ─── LANGUAGE SWITCHER ───
+document.addEventListener('DOMContentLoaded', function() {
+
+  // Lang toggle button
+  var btn = document.getElementById('langToggle');
+  if (btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      document.getElementById('langDropdown').classList.toggle('open');
+    });
+  }
+
+  // Lang option clicks
+  document.querySelectorAll('.lang-option[data-lang]').forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      setLang(this.getAttribute('data-lang'));
+    });
+  });
+
+  // Close on outside click
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.lang-switcher')) {
+      document.getElementById('langDropdown').classList.remove('open');
+    }
+  });
+
+  // Contact submit button
+  var submitBtn = document.getElementById('cf-submit-btn');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', function() {
+      handleContact(this);
+    });
+  }
+
+  // Scroll reveal
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(function(el) { observer.observe(el); });
+
+  // Live sensor animation
+  setInterval(updateLive, 3000);
+
+});
+
 function setLang(lang) {
+  if (!i18n[lang] || !langMeta[lang]) return;
   currentLang = lang;
-  const t = i18n[lang];
-  const m = langMeta[lang];
+  var t = i18n[lang];
+  var m = langMeta[lang];
 
-  // Update button
-  document.getElementById('currentFlag').textContent = m.flag;
-  document.getElementById('currentLangLabel').textContent = m.label;
-  document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('active'));
-  document.querySelector(`.lang-option[onclick="setLang('${lang}')"]`).classList.add('active');
+  // Update flag button
+  var flagEl = document.getElementById('currentFlag');
+  if (flagEl) { flagEl.src = m.flag; flagEl.alt = m.label; }
+  var labelEl = document.getElementById('currentLangLabel');
+  if (labelEl) labelEl.textContent = m.label;
 
-  // Update all data-i18n elements
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
+  // Mark active option
+  document.querySelectorAll('.lang-option').forEach(function(o) { o.classList.remove('active'); });
+  var activeOpt = document.querySelector('.lang-option[data-lang="' + lang + '"]');
+  if (activeOpt) activeOpt.classList.add('active');
+
+  // Translate all data-i18n elements
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
     if (t[key] !== undefined) el.innerHTML = t[key];
   });
 
   // Update placeholders
-  document.querySelectorAll('[data-placeholder]').forEach(el => {
-    const key = 'placeholder_' + el.getAttribute('data-placeholder');
+  document.querySelectorAll('[data-placeholder]').forEach(function(el) {
+    var key = 'placeholder_' + el.getAttribute('data-placeholder');
     if (t[key] !== undefined) el.placeholder = t[key];
   });
 
-  // Update html lang
   document.documentElement.lang = lang;
 
-  toggleLang(true); // close
+  // Close dropdown
+  document.getElementById('langDropdown').classList.remove('open');
 }
 
-function toggleLang(forceClose = false) {
-  const dd = document.getElementById('langDropdown');
-  if (forceClose) { dd.classList.remove('open'); return; }
-  dd.classList.toggle('open');
+// ─── CONTACT FORM ───
+const contactErrors = {
+  it: { name:'Inserisci il tuo nome o nome azienda.', email:'Inserisci un indirizzo email valido.', subject:'Inserisci un oggetto per il messaggio.', message:'Scrivi il tuo messaggio.', success:'✅ Messaggio inviato! Ti risponderemo presto.' },
+  en: { name:'Please enter your name or company.', email:'Please enter a valid email address.', subject:'Please enter a subject.', message:'Please write your message.', success:'✅ Message sent! We\'ll reply soon.' },
+  de: { name:'Bitte Namen oder Firma eingeben.', email:'Bitte gültige E-Mail-Adresse eingeben.', subject:'Bitte Betreff eingeben.', message:'Bitte Nachricht schreiben.', success:'✅ Nachricht gesendet! Wir antworten bald.' },
+  fr: { name:'Veuillez entrer votre nom ou entreprise.', email:'Veuillez entrer une adresse e-mail valide.', subject:'Veuillez entrer un objet.', message:'Veuillez écrire votre message.', success:'✅ Message envoyé ! Nous vous répondrons bientôt.' },
+  es: { name:'Por favor ingresa tu nombre o empresa.', email:'Por favor ingresa un correo válido.', subject:'Por favor ingresa un asunto.', message:'Por favor escribe tu mensaje.', success:'✅ ¡Mensaje enviado! Te responderemos pronto.' }
+};
+
+function clearError(id) {
+  const el = document.getElementById(id);
+  const errEl = document.getElementById('err-' + id);
+  if (el) el.classList.remove('error');
+  if (errEl) errEl.textContent = '';
 }
 
-// Close on outside click
-document.addEventListener('click', e => {
-  if (!e.target.closest('.lang-switcher')) {
-    document.getElementById('langDropdown').classList.remove('open');
-  }
-});
+function setError(id, msg) {
+  const el = document.getElementById(id);
+  const errEl = document.getElementById('err-' + id);
+  if (el) { el.classList.add('error'); el.classList.remove('valid'); }
+  if (errEl) errEl.textContent = msg;
+}
 
-// ─── SCROLL REVEAL ───
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
-}, { threshold: 0.12 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+function setValid(id) {
+  const el = document.getElementById(id);
+  if (el) { el.classList.remove('error'); el.classList.add('valid'); }
+}
 
-// ─── CONTACT HANDLER ───
 function handleContact(btn) {
-  const msgs = { it:'✅ Messaggio inviato! Ti risponderemo presto.', en:'✅ Message sent! We\'ll reply soon.', de:'✅ Nachricht gesendet! Wir antworten bald.', fr:'✅ Message envoyé! Nous vous répondrons bientôt.', es:'✅ ¡Mensaje enviado! Te responderemos pronto.' };
-  btn.innerHTML = msgs[currentLang] || msgs.en;
-  btn.style.background = 'linear-gradient(135deg, #1a6b2e, #2d8a47)';
-  setTimeout(() => { btn.innerHTML = `<span data-i18n="send_btn">${i18n[currentLang].send_btn}</span>`; btn.style.background = ''; }, 3000);
+  const errs = contactErrors[currentLang] || contactErrors.it;
+  const name    = document.getElementById('cf-name');
+  const email   = document.getElementById('cf-email');
+  const subject = document.getElementById('cf-subject');
+  const message = document.getElementById('cf-message');
+  const success = document.getElementById('cf-success');
+
+  ['cf-name','cf-email','cf-subject','cf-message'].forEach(id => clearError(id));
+  success.style.display = 'none';
+
+  let valid = true;
+
+  if (!name.value.trim()) { setError('cf-name', errs.name); valid = false; } else setValid('cf-name');
+
+  const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email.value.trim() || !emailRx.test(email.value.trim())) { setError('cf-email', errs.email); valid = false; } else setValid('cf-email');
+
+  if (!subject.value.trim()) { setError('cf-subject', errs.subject); valid = false; } else setValid('cf-subject');
+
+  if (!message.value.trim()) { setError('cf-message', errs.message); valid = false; } else setValid('cf-message');
+
+  if (!valid) return;
+
+  const mailto = 'mailto:info.techagrimotion@gmail.com'
+    + '?subject=' + encodeURIComponent('[TechAgriMotion] ' + subject.value.trim())
+    + '&body=' + encodeURIComponent('Da: ' + name.value.trim() + ' <' + email.value.trim() + '>\n\n' + message.value.trim());
+  window.location.href = mailto;
+
+  success.textContent = errs.success;
+  success.style.display = 'block';
+
+  setTimeout(() => {
+    name.value = ''; email.value = ''; subject.value = ''; message.value = '';
+    ['cf-name','cf-email','cf-subject','cf-message'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('valid','error');
+    });
+  }, 800);
+
+  setTimeout(() => { success.style.display = 'none'; }, 5000);
 }
 
 // ─── LIVE SENSOR ANIMATION ───
 function updateLive() {
-  const temp = (22 + Math.random()*5).toFixed(1);
-  const humid = (60 + Math.random()*15).toFixed(0);
-  const rain = (Math.random()*5).toFixed(1);
-  const insects = Math.floor(Math.random()*5 + 1);
-  const vals = document.querySelectorAll('.reading-val');
-  if (vals[0]) vals[0].innerHTML = `${temp} <span>°C</span>`;
-  if (vals[1]) vals[1].innerHTML = `${humid} <span>%</span>`;
-  if (vals[2]) vals[2].innerHTML = `${rain} <span>mm</span>`;
-  if (vals[3]) vals[3].innerHTML = `${insects} <span data-i18n="spec_unit">${i18n[currentLang].spec_unit}</span>`;
-
-  const fills = document.querySelectorAll('.reading-fill');
-  if (fills[0]) fills[0].style.width = `${(parseFloat(temp)/50*100)}%`;
-  if (fills[1]) fills[1].style.width = `${humid}%`;
-  if (fills[2]) fills[2].style.width = `${parseFloat(rain)/10*100}%`;
-  if (fills[3]) fills[3].style.width = `${insects/8*100}%`;
+  var temp = (22 + Math.random()*5).toFixed(1);
+  var humid = (60 + Math.random()*15).toFixed(0);
+  var rain = (Math.random()*5).toFixed(1);
+  var insects = Math.floor(Math.random()*5 + 1);
+  var vals = document.querySelectorAll('.reading-val');
+  if (vals[0]) vals[0].innerHTML = temp + ' <span>°C</span>';
+  if (vals[1]) vals[1].innerHTML = humid + ' <span>%</span>';
+  if (vals[2]) vals[2].innerHTML = rain + ' <span>mm</span>';
+  var unit = (i18n[currentLang] && i18n[currentLang].spec_unit) ? i18n[currentLang].spec_unit : 'sp.';
+  if (vals[3]) vals[3].innerHTML = insects + ' <span>' + unit + '</span>';
+  var fills = document.querySelectorAll('.reading-fill');
+  if (fills[0]) fills[0].style.width = (parseFloat(temp)/50*100) + '%';
+  if (fills[1]) fills[1].style.width = humid + '%';
+  if (fills[2]) fills[2].style.width = (parseFloat(rain)/10*100) + '%';
+  if (fills[3]) fills[3].style.width = (insects/8*100) + '%';
 }
-setInterval(updateLive, 3000);
 </script>
 </body>
 </html>
-
-
