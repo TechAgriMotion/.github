@@ -1,0 +1,48 @@
+{
+  "force_overall_status": null,
+  "force_overall_message": null,
+  "services": [
+    {
+      "id": "srv_api",
+      "name": "API Service",
+      "description": "Core REST and GraphQL APIs",
+      "force_status": null
+    },
+    {
+      "id": "srv_web",
+      "name": "Web Dashboard",
+      "description": "Main web application and control panel",
+      "force_status": null
+    },
+    {
+      "id": "srv_db",
+      "name": "Database Operations",
+      "description": "Data storage and retrieval systems",
+      "force_status": null
+    },
+    {
+      "id": "srv_iot",
+      "name": "IoT Gateway",
+      "description": "Device telemetry and command network",
+      "force_status": null
+    }
+  ],
+  "incidents": [
+    {
+      "id": "inc_manual_001",
+      "name": "Scheduled Maintenance - Database Upgrades",
+      "type": "Maintenance",
+      "impact": "minor",
+      "status": "investigating",
+      "created_at": "2026-06-20T02:00:00Z",
+      "resolved_at": null,
+      "updates": [
+        {
+          "status": "investigating",
+          "message": "We will be performing scheduled database upgrades. Minor disruptions may occur.",
+          "timestamp": "2026-06-16T10:00:00Z"
+        }
+      ]
+    }
+  ]
+}

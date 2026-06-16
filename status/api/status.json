@@ -1,0 +1,36 @@
+{
+  "overall_status": "operational",
+  "overall_message": "All Systems Operational",
+  "last_updated": "2026-06-16T14:00:00Z",
+  "services": [
+    {
+      "id": "srv_api",
+      "name": "API Service",
+      "description": "Core REST API — FastAPI (port 8000)",
+      "status": "operational",
+      "uptime": 99.98
+    },
+    {
+      "id": "srv_web",
+      "name": "Web Dashboard",
+      "description": "Main web application and control panel (port 80)",
+      "status": "operational",
+      "uptime": 99.99
+    },
+    {
+      "id": "srv_db",
+      "name": "Database Operations",
+      "description": "Data storage and retrieval — MySQL/MariaDB (port 3306)",
+      "status": "operational",
+      "uptime": 99.95
+    },
+    {
+      "id": "srv_iot",
+      "name": "IoT Gateway",
+      "description": "Device telemetry and command network — Mosquitto MQTT (port 1883)",
+      "status": "operational",
+      "uptime": 99.90
+    }
+  ],
+  "incidents": []
+}
