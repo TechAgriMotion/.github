@@ -1,7 +1,7 @@
 {
   "overall_status": "degraded",
   "overall_message": "Partial System Outage",
-  "last_updated": "2026-06-16T15:14:15Z",
+  "last_updated": "2026-06-16T18:49:15Z",
   "services": [
     {
       "id": "srv_api",
@@ -38,12 +38,12 @@
       "name": "Scheduled Maintenance - Database Upgrades",
       "type": "Maintenance",
       "impact": "minor",
-      "status": "investigating",
-      "created_at": "2026-06-20T02:00:00Z",
-      "resolved_at": null,
+      "status": "resolved",
+      "created_at": "2026-06-10T02:00:00Z",
+      "resolved_at": "2026-06-15T02:00:00Z",
       "updates": [
         {
-          "status": "investigating",
+          "status": "resolved",
           "message": "We will be performing scheduled database upgrades. Minor disruptions may occur.",
           "timestamp": "2026-06-16T10:00:00Z"
         }
