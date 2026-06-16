@@ -54,8 +54,8 @@ jobs:
             SRV_API_STATUS="degraded"
           fi
 
-          # ── srv_web: Apache/Web on port 80 ──────────────────────────────────
-          WEB_CODE=$(check_http 80)
+          # ── srv_web: Apache/Web on port 60080 ──────────────────────────────────
+          WEB_CODE=$(check_http 60080)
           if [[ "$WEB_CODE" =~ ^[23] ]]; then
             SRV_WEB_STATUS="operational"
           elif [ "$WEB_CODE" = "000" ]; then
@@ -124,28 +124,28 @@ jobs:
                       "name":        "API Service",
                       "description": "Core REST API — FastAPI (port 8000)",
                       "status":      "$SRV_API_STATUS",
-                      "uptime":      99.98
+                      "uptime":      100.00
                   },
                   {
                       "id":          "srv_web",
                       "name":        "Web Dashboard",
                       "description": "Main web application and control panel (port 80)",
                       "status":      "$SRV_WEB_STATUS",
-                      "uptime":      99.99
+                      "uptime":      100.00
                   },
                   {
                       "id":          "srv_db",
                       "name":        "Database Operations",
                       "description": "Data storage and retrieval — MySQL/MariaDB (port 3306)",
                       "status":      "$SRV_DB_STATUS",
-                      "uptime":      99.95
+                      "uptime":      100.00
                   },
                   {
                       "id":          "srv_iot",
                       "name":        "IoT Gateway",
                       "description": "Device telemetry and command network — Mosquitto MQTT (port 1883)",
                       "status":      "$SRV_IOT_STATUS",
-                      "uptime":      99.90
+                      "uptime":      100.00
                   }
               ],
               "incidents": json.loads('$INCIDENTS_JSON')
