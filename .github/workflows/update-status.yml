@@ -6,6 +6,10 @@ on:
     - cron: '*/5 * * * *'
   workflow_dispatch:   # Allow manual trigger from GitHub UI
 
+# Grant write access so the bot can commit status.json
+permissions:
+  contents: write
+
 jobs:
   check-services:
     name: Check Services & Update status.json
@@ -16,6 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check services and generate status.json
         id: check
@@ -166,6 +171,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to status.json — skipping commit."
           else
-            git commit -m "chore: update status.json [$(date -u +%H:%M UTC)]"
+            git commit -m "chore: update status.json [$(date -u +'%H:%M') UTC]"
             git push
           fi
