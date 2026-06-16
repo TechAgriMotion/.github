@@ -1,7 +1,7 @@
 {
   "overall_status": "degraded",
   "overall_message": "Partial System Outage",
-  "last_updated": "2026-06-16T15:03:13Z",
+  "last_updated": "2026-06-16T15:14:15Z",
   "services": [
     {
       "id": "srv_api",
@@ -13,7 +13,7 @@
     {
       "id": "srv_web",
       "name": "Web Dashboard",
-      "description": "Main web application and control panel (port 80)",
+      "description": "Main web application and control panel (port 60080)",
       "status": "degraded",
       "uptime": 100.0
     },
