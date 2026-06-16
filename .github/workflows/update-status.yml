@@ -134,7 +134,7 @@ jobs:
                   {
                       "id":          "srv_web",
                       "name":        "Web Dashboard",
-                      "description": "Main web application and control panel (port 80)",
+                      "description": "Main web application and control panel (port 60080)",
                       "status":      "$SRV_WEB_STATUS",
                       "uptime":      100.00
                   },
