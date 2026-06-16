@@ -1,0 +1,171 @@
+name: Update Status Page
+
+on:
+  schedule:
+    # Runs every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:   # Allow manual trigger from GitHub UI
+
+jobs:
+  check-services:
+    name: Check Services & Update status.json
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check services and generate status.json
+        id: check
+        run: |
+          HOST="techagrimotion.ddns.net"
+          TIMEOUT=5
+
+          # ── Helper: TCP port check ──────────────────────────────────────────
+          check_port() {
+            local port=$1
+            local result
+            result=$(timeout "$TIMEOUT" bash -c "echo >/dev/tcp/$HOST/$port" 2>/dev/null && echo "ok" || echo "fail")
+            echo "$result"
+          }
+
+          # ── Helper: HTTP check (returns HTTP status code) ───────────────────
+          check_http() {
+            local port=$1
+            local code
+            code=$(curl -s -o /dev/null -w "%{http_code}" \
+              --max-time "$TIMEOUT" \
+              --connect-timeout "$TIMEOUT" \
+              "http://$HOST:$port" 2>/dev/null || echo "000")
+            echo "$code"
+          }
+
+          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # ── srv_api: FastAPI on port 8000 ───────────────────────────────────
+          API_CODE=$(check_http 8000)
+          if [[ "$API_CODE" =~ ^[23] ]]; then
+            SRV_API_STATUS="operational"
+          elif [ "$API_CODE" = "000" ]; then
+            SRV_API_STATUS="major_outage"
+          else
+            SRV_API_STATUS="degraded"
+          fi
+
+          # ── srv_web: Apache/Web on port 80 ──────────────────────────────────
+          WEB_CODE=$(check_http 80)
+          if [[ "$WEB_CODE" =~ ^[23] ]]; then
+            SRV_WEB_STATUS="operational"
+          elif [ "$WEB_CODE" = "000" ]; then
+            SRV_WEB_STATUS="major_outage"
+          else
+            SRV_WEB_STATUS="degraded"
+          fi
+
+          # ── srv_db: MySQL on port 3306 (TCP check) ──────────────────────────
+          DB_RESULT=$(check_port 3306)
+          if [ "$DB_RESULT" = "ok" ]; then
+            SRV_DB_STATUS="operational"
+          else
+            SRV_DB_STATUS="major_outage"
+          fi
+
+          # ── srv_iot: Mosquitto MQTT on port 1883 (TCP check) ────────────────
+          IOT_RESULT=$(check_port 1883)
+          if [ "$IOT_RESULT" = "ok" ]; then
+            SRV_IOT_STATUS="operational"
+          else
+            SRV_IOT_STATUS="major_outage"
+          fi
+
+          # ── Count outages ───────────────────────────────────────────────────
+          OUTAGE_COUNT=0
+          for s in "$SRV_API_STATUS" "$SRV_WEB_STATUS" "$SRV_DB_STATUS" "$SRV_IOT_STATUS"; do
+            [ "$s" = "major_outage" ] && OUTAGE_COUNT=$((OUTAGE_COUNT + 1))
+          done
+
+          TOTAL=4
+          if [ "$OUTAGE_COUNT" -eq 0 ]; then
+            OVERALL_STATUS="operational"
+            OVERALL_MSG="All Systems Operational"
+          elif [ "$OUTAGE_COUNT" -eq "$TOTAL" ]; then
+            OVERALL_STATUS="major_outage"
+            OVERALL_MSG="Major System Outage"
+          else
+            OVERALL_STATUS="degraded"
+            OVERALL_MSG="Partial System Outage"
+          fi
+
+          # ── Read existing manual incidents from manual_data.json ────────────
+          INCIDENTS_JSON="[]"
+          MANUAL_FILE="status/api/manual_data.json"
+          if [ -f "$MANUAL_FILE" ]; then
+            INCIDENTS_JSON=$(python3 -c "
+          import json, sys
+          with open('$MANUAL_FILE') as f:
+              d = json.load(f)
+          print(json.dumps(d.get('incidents', [])))
+          ")
+          fi
+
+          # ── Write status.json ───────────────────────────────────────────────
+          python3 - <<PYEOF
+          import json
+
+          status = {
+              "overall_status":  "$OVERALL_STATUS",
+              "overall_message": "$OVERALL_MSG",
+              "last_updated":    "$NOW",
+              "services": [
+                  {
+                      "id":          "srv_api",
+                      "name":        "API Service",
+                      "description": "Core REST API — FastAPI (port 8000)",
+                      "status":      "$SRV_API_STATUS",
+                      "uptime":      99.98
+                  },
+                  {
+                      "id":          "srv_web",
+                      "name":        "Web Dashboard",
+                      "description": "Main web application and control panel (port 80)",
+                      "status":      "$SRV_WEB_STATUS",
+                      "uptime":      99.99
+                  },
+                  {
+                      "id":          "srv_db",
+                      "name":        "Database Operations",
+                      "description": "Data storage and retrieval — MySQL/MariaDB (port 3306)",
+                      "status":      "$SRV_DB_STATUS",
+                      "uptime":      99.95
+                  },
+                  {
+                      "id":          "srv_iot",
+                      "name":        "IoT Gateway",
+                      "description": "Device telemetry and command network — Mosquitto MQTT (port 1883)",
+                      "status":      "$SRV_IOT_STATUS",
+                      "uptime":      99.90
+                  }
+              ],
+              "incidents": json.loads('$INCIDENTS_JSON')
+          }
+
+          with open("status/api/status.json", "w") as f:
+              json.dump(status, f, indent=2)
+
+          print("status.json written — overall:", "$OVERALL_STATUS")
+          PYEOF
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add status/api/status.json
+          # Only commit if there are actual changes
+          if git diff --staged --quiet; then
+            echo "No changes to status.json — skipping commit."
+          else
+            git commit -m "chore: update status.json [$(date -u +%H:%M UTC)]"
+            git push
+          fi
