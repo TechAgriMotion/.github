@@ -1,7 +1,7 @@
 {
   "overall_status": "degraded",
   "overall_message": "Partial System Outage",
-  "last_updated": "2026-06-16T18:49:15Z",
+  "last_updated": "2026-06-16T21:37:04Z",
   "services": [
     {
       "id": "srv_api",
