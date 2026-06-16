@@ -1,36 +1,53 @@
 {
-  "overall_status": "operational",
-  "overall_message": "All Systems Operational",
-  "last_updated": "2026-06-16T14:00:00Z",
+  "overall_status": "degraded",
+  "overall_message": "Partial System Outage",
+  "last_updated": "2026-06-16T15:03:13Z",
   "services": [
     {
       "id": "srv_api",
       "name": "API Service",
-      "description": "Core REST API — FastAPI (port 8000)",
-      "status": "operational",
-      "uptime": 99.98
+      "description": "Core REST API \u2014 FastAPI (port 8000)",
+      "status": "degraded",
+      "uptime": 100.0
     },
     {
       "id": "srv_web",
       "name": "Web Dashboard",
       "description": "Main web application and control panel (port 80)",
-      "status": "operational",
-      "uptime": 99.99
+      "status": "degraded",
+      "uptime": 100.0
     },
     {
       "id": "srv_db",
       "name": "Database Operations",
-      "description": "Data storage and retrieval — MySQL/MariaDB (port 3306)",
-      "status": "operational",
-      "uptime": 99.95
+      "description": "Data storage and retrieval \u2014 MySQL/MariaDB (port 3306)",
+      "status": "major_outage",
+      "uptime": 100.0
     },
     {
       "id": "srv_iot",
       "name": "IoT Gateway",
-      "description": "Device telemetry and command network — Mosquitto MQTT (port 1883)",
-      "status": "operational",
-      "uptime": 99.90
+      "description": "Device telemetry and command network \u2014 Mosquitto MQTT (port 1883)",
+      "status": "major_outage",
+      "uptime": 100.0
     }
   ],
-  "incidents": []
+  "incidents": [
+    {
+      "id": "inc_manual_001",
+      "name": "Scheduled Maintenance - Database Upgrades",
+      "type": "Maintenance",
+      "impact": "minor",
+      "status": "investigating",
+      "created_at": "2026-06-20T02:00:00Z",
+      "resolved_at": null,
+      "updates": [
+        {
+          "status": "investigating",
+          "message": "We will be performing scheduled database upgrades. Minor disruptions may occur.",
+          "timestamp": "2026-06-16T10:00:00Z"
+        }
+      ]
+    }
+  ]
 }
