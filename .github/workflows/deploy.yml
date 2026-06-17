@@ -1,0 +1,231 @@
+name: Status Check & Deploy
+
+on:
+  push:
+    branches: ["main"]
+  schedule:
+    # Ogni 5 minuti (GitHub esegue "best effort": il timing reale puo' variare)
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+# contents: write -> per commitare status.json
+# pages: write + id-token: write -> per pubblicare su GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Serializza eventuali run quasi simultanee (push umano + tick dello schedule)
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  status-and-deploy:
+    name: Check Services, Update status.json & Deploy Pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check services and generate status.json
+        run: |
+          HOST="techagrimotion.ddns.net"
+          TIMEOUT=5
+
+          API_PORT=8000
+          WEB_PORT=60080
+
+          # ════════════════════════════════════════════════════════════════
+          # ADATTA questi 4 percorsi alle tue route reali (FastAPI / Apache)
+          # ════════════════════════════════════════════════════════════════
+          API_GESTIONALE_PATH="/api/gestionale/health"
+          API_IOT_PATH="/api/iot/health"
+          WEB_GESTIONALE_PATH="/gestionale"
+          WEB_IOT_PATH="/iot"
+
+          # ── Helper: TCP port check (per DB e MQTT, che non parlano HTTP) ────
+          check_port() {
+            local port=$1
+            timeout "$TIMEOUT" bash -c "echo >/dev/tcp/$HOST/$port" 2>/dev/null \
+              && echo "ok" || echo "fail"
+          }
+
+          # ── Helper: HTTP check su un path applicativo, non solo sulla porta ─
+          check_http() {
+            local port=$1
+            local path=$2
+            curl -s -o /dev/null -w "%{http_code}" \
+              --max-time "$TIMEOUT" --connect-timeout "$TIMEOUT" \
+              "http://$HOST:$port$path" 2>/dev/null || echo "000"
+          }
+
+          # ── Helper: classifica un codice HTTP in operational/degraded/outage ─
+          classify_http() {
+            local code=$1
+            if [[ "$code" =~ ^[23] ]]; then
+              echo "operational"
+            elif [ "$code" = "000" ]; then
+              echo "major_outage"
+            else
+              echo "degraded"
+            fi
+          }
+
+          NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # ── API Gestionale (FastAPI) ─────────────────────────────────────
+          API_GESTIONALE_CODE=$(check_http "$API_PORT" "$API_GESTIONALE_PATH")
+          SRV_API_GESTIONALE_STATUS=$(classify_http "$API_GESTIONALE_CODE")
+
+          # ── API IoT (FastAPI) ────────────────────────────────────────────
+          API_IOT_CODE=$(check_http "$API_PORT" "$API_IOT_PATH")
+          SRV_API_IOT_STATUS=$(classify_http "$API_IOT_CODE")
+
+          # ── Web Dashboard Gestionale (Apache) ───────────────────────────
+          WEB_GESTIONALE_CODE=$(check_http "$WEB_PORT" "$WEB_GESTIONALE_PATH")
+          SRV_WEB_GESTIONALE_STATUS=$(classify_http "$WEB_GESTIONALE_CODE")
+
+          # ── Web Dashboard IoT (Apache) ───────────────────────────────────
+          WEB_IOT_CODE=$(check_http "$WEB_PORT" "$WEB_IOT_PATH")
+          SRV_WEB_IOT_STATUS=$(classify_http "$WEB_IOT_CODE")
+
+          # ── Database: MySQL on port 3306 (TCP check) ────────────────────
+          DB_RESULT=$(check_port 3306)
+          if [ "$DB_RESULT" = "ok" ]; then
+            SRV_DB_STATUS="operational"
+          else
+            SRV_DB_STATUS="major_outage"
+          fi
+
+          # ── IoT Gateway: Mosquitto MQTT on port 1883 (TCP check) ─────────
+          MQTT_RESULT=$(check_port 1883)
+          if [ "$MQTT_RESULT" = "ok" ]; then
+            SRV_MQTT_STATUS="operational"
+          else
+            SRV_MQTT_STATUS="major_outage"
+          fi
+
+          # ── Count outages over 6 services ───────────────────────────────
+          OUTAGE_COUNT=0
+          for s in "$SRV_API_GESTIONALE_STATUS" "$SRV_API_IOT_STATUS" \
+                   "$SRV_WEB_GESTIONALE_STATUS" "$SRV_WEB_IOT_STATUS" \
+                   "$SRV_DB_STATUS" "$SRV_MQTT_STATUS"; do
+            [ "$s" = "major_outage" ] && OUTAGE_COUNT=$((OUTAGE_COUNT + 1))
+          done
+
+          TOTAL=6
+          if [ "$OUTAGE_COUNT" -eq 0 ]; then
+            OVERALL_STATUS="operational"
+            OVERALL_MSG="All Systems Operational"
+          elif [ "$OUTAGE_COUNT" -eq "$TOTAL" ]; then
+            OVERALL_STATUS="major_outage"
+            OVERALL_MSG="Major System Outage"
+          else
+            OVERALL_STATUS="degraded"
+            OVERALL_MSG="Partial System Outage"
+          fi
+
+          # ── Read existing manual incidents from manual_data.json ────────
+          INCIDENTS_JSON="[]"
+          MANUAL_FILE="status/api/manual_data.json"
+          if [ -f "$MANUAL_FILE" ]; then
+            INCIDENTS_JSON=$(python3 -c "
+          import json, sys
+          with open('$MANUAL_FILE') as f:
+              d = json.load(f)
+          print(json.dumps(d.get('incidents', [])))
+          ")
+          fi
+
+          # ── Write status.json ────────────────────────────────────────────
+          python3 - <<PYEOF
+          import json
+
+          status = {
+              "overall_status":  "$OVERALL_STATUS",
+              "overall_message": "$OVERALL_MSG",
+              "last_updated":    "$NOW",
+              "services": [
+                  {
+                      "id":          "srv_api_gestionale",
+                      "name":        "Gestionale API",
+                      "description": "Gestionale REST API — FastAPI ($API_GESTIONALE_PATH)",
+                      "status":      "$SRV_API_GESTIONALE_STATUS",
+                      "uptime":      100.00
+                  },
+                  {
+                      "id":          "srv_api_iot",
+                      "name":        "IoT API",
+                      "description": "IoT REST API — FastAPI ($API_IOT_PATH)",
+                      "status":      "$SRV_API_IOT_STATUS",
+                      "uptime":      100.00
+                  },
+                  {
+                      "id":          "srv_web_gestionale",
+                      "name":        "Gestionale Dashboard",
+                      "description": "Gestionale web panel — Apache ($WEB_GESTIONALE_PATH)",
+                      "status":      "$SRV_WEB_GESTIONALE_STATUS",
+                      "uptime":      100.00
+                  },
+                  {
+                      "id":          "srv_web_iot",
+                      "name":        "IoT Dashboard",
+                      "description": "IoT web panel — Apache ($WEB_IOT_PATH)",
+                      "status":      "$SRV_WEB_IOT_STATUS",
+                      "uptime":      100.00
+                  },
+                  {
+                      "id":          "srv_db",
+                      "name":        "Database",
+                      "description": "Data storage and retrieval — MySQL/MariaDB (port 3306)",
+                      "status":      "$SRV_DB_STATUS",
+                      "uptime":      100.00
+                  },
+                  {
+                      "id":          "srv_mqtt",
+                      "name":        "IoT Gateway (MQTT)",
+                      "description": "Device telemetry and command network — Mosquitto MQTT (port 1883)",
+                      "status":      "$SRV_MQTT_STATUS",
+                      "uptime":      100.00
+                  }
+              ],
+              "incidents": json.loads('$INCIDENTS_JSON')
+          }
+
+          with open("status/api/status.json", "w") as f:
+              json.dump(status, f, indent=2)
+
+          print("status.json written — overall:", "$OVERALL_STATUS")
+          PYEOF
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add status/api/status.json
+          if git diff --staged --quiet; then
+            echo "No changes to status.json — skipping commit."
+          else
+            git commit -m "chore: update status.json [$(date -u +'%H:%M') UTC]"
+            git push
+          fi
+
+      # ── Deploy su GitHub Pages, sempre, in qualunque branch di trigger ──
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
