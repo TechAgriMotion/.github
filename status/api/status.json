@@ -1,49 +1,55 @@
 {
   "overall_status": "degraded",
   "overall_message": "Partial System Outage",
-  "last_updated": "2026-06-17T11:56:54Z",
+  "last_updated": "2026-06-17T12:06:05Z",
   "services": [
     {
       "id": "srv_api_gestionale",
       "name": "Gestionale API",
       "description": "Gestionale REST API \u2014 FastAPI (/api/gestionale/health)",
       "status": "degraded",
-      "uptime": 100.0
+      "uptime": 100.0,
+      "detail": "HTTP 000000"
     },
     {
       "id": "srv_api_iot",
       "name": "IoT API",
       "description": "IoT REST API \u2014 FastAPI (/api/iot/health)",
       "status": "degraded",
-      "uptime": 100.0
+      "uptime": 100.0,
+      "detail": "HTTP 000000"
     },
     {
       "id": "srv_web_gestionale",
       "name": "Gestionale Dashboard",
       "description": "Gestionale web panel \u2014 Apache (/gestionale)",
       "status": "degraded",
-      "uptime": 100.0
+      "uptime": 100.0,
+      "detail": "HTTP 000000"
     },
     {
       "id": "srv_web_iot",
       "name": "IoT Dashboard",
       "description": "IoT web panel \u2014 Apache (/iot)",
       "status": "degraded",
-      "uptime": 100.0
+      "uptime": 100.0,
+      "detail": "HTTP 000000"
     },
     {
       "id": "srv_db",
       "name": "Database",
       "description": "Data storage and retrieval \u2014 MySQL/MariaDB (port 3306)",
       "status": "major_outage",
-      "uptime": 100.0
+      "uptime": 100.0,
+      "detail": "Porta 3306 non raggiungibile (timeout o connessione rifiutata)"
     },
     {
       "id": "srv_mqtt",
       "name": "IoT Gateway (MQTT)",
       "description": "Device telemetry and command network \u2014 Mosquitto MQTT (port 1883)",
       "status": "major_outage",
-      "uptime": 100.0
+      "uptime": 100.0,
+      "detail": "Porta 1883 non raggiungibile (timeout o connessione rifiutata)"
     }
   ],
   "incidents": [
