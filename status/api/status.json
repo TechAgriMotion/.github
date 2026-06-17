@@ -1,32 +1,46 @@
 {
   "overall_status": "degraded",
   "overall_message": "Partial System Outage",
-  "last_updated": "2026-06-17T06:49:02Z",
+  "last_updated": "2026-06-17T07:08:11Z",
   "services": [
     {
-      "id": "srv_api",
-      "name": "API Service",
-      "description": "Core REST API \u2014 FastAPI (port 8000)",
+      "id": "srv_api_gestionale",
+      "name": "Gestionale API",
+      "description": "Gestionale REST API \u2014 FastAPI (/api/gestionale/health)",
       "status": "degraded",
       "uptime": 100.0
     },
     {
-      "id": "srv_web",
-      "name": "Web Dashboard",
-      "description": "Main web application and control panel (port 60080)",
+      "id": "srv_api_iot",
+      "name": "IoT API",
+      "description": "IoT REST API \u2014 FastAPI (/api/iot/health)",
+      "status": "degraded",
+      "uptime": 100.0
+    },
+    {
+      "id": "srv_web_gestionale",
+      "name": "Gestionale Dashboard",
+      "description": "Gestionale web panel \u2014 Apache (/gestionale)",
+      "status": "degraded",
+      "uptime": 100.0
+    },
+    {
+      "id": "srv_web_iot",
+      "name": "IoT Dashboard",
+      "description": "IoT web panel \u2014 Apache (/iot)",
       "status": "degraded",
       "uptime": 100.0
     },
     {
       "id": "srv_db",
-      "name": "Database Operations",
+      "name": "Database",
       "description": "Data storage and retrieval \u2014 MySQL/MariaDB (port 3306)",
       "status": "major_outage",
       "uptime": 100.0
     },
     {
-      "id": "srv_iot",
-      "name": "IoT Gateway",
+      "id": "srv_mqtt",
+      "name": "IoT Gateway (MQTT)",
       "description": "Device telemetry and command network \u2014 Mosquitto MQTT (port 1883)",
       "status": "major_outage",
       "uptime": 100.0
