@@ -2,25 +2,36 @@ name: Update Status Page
 
 on:
   schedule:
-    # Runs every 5 minutes
+    # Ogni 5 minuti (GitHub esegue "best effort": il timing reale puo' variare)
     - cron: '*/5 * * * *'
   workflow_dispatch:   # Allow manual trigger from GitHub UI
 
-# Grant write access so the bot can commit status.json
+# contents: write -> per commitare status.json
+# pages: write + id-token: write -> per pubblicare su GitHub Pages
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+# Stesso gruppo di concurrency usato in static.yml: evita che due deploy
+# (uno da qui, uno da static.yml su un push umano) collidano.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   check-services:
-    name: Check Services & Update status.json
+    name: Check Services, Update status.json & Deploy
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check services and generate status.json
         id: check
@@ -174,3 +185,20 @@ jobs:
             git commit -m "chore: update status.json [$(date -u +'%H:%M') UTC]"
             git push
           fi
+
+      # ── Deploy su GitHub Pages eseguito QUI, nello stesso job ──────────────
+      # Cosi' non dipende dal push-trigger di static.yml (che non scatta
+      # quando il push e' fatto con il GITHUB_TOKEN del bot). Il file system
+      # locale ha gia' lo status.json aggiornato (scritto sopra), quindi
+      # l'artifact caricato lo contiene sempre, commit avvenuto o no.
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
