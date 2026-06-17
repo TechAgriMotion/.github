@@ -89,6 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const badgeText = service.status.replace(/_/g, ' ');
             const uptime    = service.uptime ?? 99.9;
 
+            const detailHtml = service.detail
+                ? `<div class="service-detail ${badgeClass}">${service.detail}</div>`
+                : '';
+
             const card = document.createElement('div');
             card.className = 'service-card';
             card.innerHTML = `
@@ -97,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="badge ${badgeClass}">${badgeText}</div>
                 </div>
                 <div class="service-desc">${service.description}</div>
+                ${detailHtml}
                 <div class="uptime-bar">
                     <div class="uptime-track" title="Uptime ${uptime}%">
                         <div class="uptime-fill ${badgeClass}" style="width:${uptime}%"></div>
