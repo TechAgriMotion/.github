@@ -42,9 +42,6 @@ jobs:
           API_PORT=8000
           WEB_PORT=60080
 
-          # ════════════════════════════════════════════════════════════════
-          # ADATTA questi 4 percorsi alle tue route reali (FastAPI / Apache)
-          # ════════════════════════════════════════════════════════════════
           API_GESTIONALE_PATH="/api/gestionale/health"
           API_IOT_PATH="/api/iot/health"
           WEB_GESTIONALE_PATH="/gestionale"
@@ -57,16 +54,19 @@ jobs:
               && echo "ok" || echo "fail"
           }
 
-          # ── Helper: HTTP check su un path applicativo, non solo sulla porta ─
+          # ── Helper: GET HTTP. Imposta le variabili globali HTTP_CODE e
+          #    HTTP_BODY_FILE (path al body salvato su disco, per estrarne
+          #    il motivo del fallimento senza rischi di shell-injection) ──
           check_http() {
             local port=$1
             local path=$2
-            curl -s -o /dev/null -w "%{http_code}" \
+            HTTP_BODY_FILE=$(mktemp)
+            HTTP_CODE=$(curl -s -o "$HTTP_BODY_FILE" -w "%{http_code}" \
               --max-time "$TIMEOUT" --connect-timeout "$TIMEOUT" \
-              "http://$HOST:$port$path" 2>/dev/null || echo "000"
+              "http://$HOST:$port$path" 2>/dev/null || echo "000")
           }
 
-          # ── Helper: classifica un codice HTTP in operational/degraded/outage ─
+          # ── Helper: classifica un codice HTTP ────────────────────────────
           classify_http() {
             local code=$1
             if [[ "$code" =~ ^[23] ]]; then
@@ -78,41 +78,77 @@ jobs:
             fi
           }
 
+          # ── Helper: messaggio leggibile sul perche' del fallimento.
+          #    Vuoto se lo stato e' operational. Se il body e' JSON con un
+          #    campo detail/message/error (es. i nostri /health) lo riusa. ──
+          build_http_detail() {
+            local code=$1
+            local body_file=$2
+            if [[ "$code" =~ ^[23] ]]; then
+              echo ""
+              return
+            fi
+            if [ "$code" = "000" ]; then
+              echo "Non raggiungibile (timeout o connessione rifiutata)"
+              return
+            fi
+            python3 -c "
+          import json
+          try:
+              with open('$body_file') as f:
+                  d = json.load(f)
+              msg = d.get('detail') or d.get('message') or d.get('error')
+              print(f'HTTP $code — {msg}' if msg else 'HTTP $code')
+          except Exception:
+              print('HTTP $code')
+          "
+          }
+
           NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-          # ── API Gestionale (FastAPI) ─────────────────────────────────────
-          API_GESTIONALE_CODE=$(check_http "$API_PORT" "$API_GESTIONALE_PATH")
-          SRV_API_GESTIONALE_STATUS=$(classify_http "$API_GESTIONALE_CODE")
+          # ── API Gestionale ────────────────────────────────────────────
+          check_http "$API_PORT" "$API_GESTIONALE_PATH"
+          SRV_API_GESTIONALE_STATUS=$(classify_http "$HTTP_CODE")
+          SRV_API_GESTIONALE_DETAIL=$(build_http_detail "$HTTP_CODE" "$HTTP_BODY_FILE")
+          rm -f "$HTTP_BODY_FILE"
 
-          # ── API IoT (FastAPI) ────────────────────────────────────────────
-          API_IOT_CODE=$(check_http "$API_PORT" "$API_IOT_PATH")
-          SRV_API_IOT_STATUS=$(classify_http "$API_IOT_CODE")
+          # ── API IoT ───────────────────────────────────────────────────
+          check_http "$API_PORT" "$API_IOT_PATH"
+          SRV_API_IOT_STATUS=$(classify_http "$HTTP_CODE")
+          SRV_API_IOT_DETAIL=$(build_http_detail "$HTTP_CODE" "$HTTP_BODY_FILE")
+          rm -f "$HTTP_BODY_FILE"
 
-          # ── Web Dashboard Gestionale (Apache) ───────────────────────────
-          WEB_GESTIONALE_CODE=$(check_http "$WEB_PORT" "$WEB_GESTIONALE_PATH")
-          SRV_WEB_GESTIONALE_STATUS=$(classify_http "$WEB_GESTIONALE_CODE")
+          # ── Web Dashboard Gestionale ──────────────────────────────────
+          check_http "$WEB_PORT" "$WEB_GESTIONALE_PATH"
+          SRV_WEB_GESTIONALE_STATUS=$(classify_http "$HTTP_CODE")
+          SRV_WEB_GESTIONALE_DETAIL=$(build_http_detail "$HTTP_CODE" "$HTTP_BODY_FILE")
+          rm -f "$HTTP_BODY_FILE"
 
-          # ── Web Dashboard IoT (Apache) ───────────────────────────────────
-          WEB_IOT_CODE=$(check_http "$WEB_PORT" "$WEB_IOT_PATH")
-          SRV_WEB_IOT_STATUS=$(classify_http "$WEB_IOT_CODE")
+          # ── Web Dashboard IoT ─────────────────────────────────────────
+          check_http "$WEB_PORT" "$WEB_IOT_PATH"
+          SRV_WEB_IOT_STATUS=$(classify_http "$HTTP_CODE")
+          SRV_WEB_IOT_DETAIL=$(build_http_detail "$HTTP_CODE" "$HTTP_BODY_FILE")
+          rm -f "$HTTP_BODY_FILE"
 
-          # ── Database: MySQL on port 3306 (TCP check) ────────────────────
+          # ── Database: MySQL on port 3306 (TCP check) ─────────────────
           DB_RESULT=$(check_port 3306)
           if [ "$DB_RESULT" = "ok" ]; then
-            SRV_DB_STATUS="operational"
+            SRV_DB_STATUS="operational"; SRV_DB_DETAIL=""
           else
             SRV_DB_STATUS="major_outage"
+            SRV_DB_DETAIL="Porta 3306 non raggiungibile (timeout o connessione rifiutata)"
           fi
 
-          # ── IoT Gateway: Mosquitto MQTT on port 1883 (TCP check) ─────────
+          # ── IoT Gateway: Mosquitto MQTT on port 1883 (TCP check) ──────
           MQTT_RESULT=$(check_port 1883)
           if [ "$MQTT_RESULT" = "ok" ]; then
-            SRV_MQTT_STATUS="operational"
+            SRV_MQTT_STATUS="operational"; SRV_MQTT_DETAIL=""
           else
             SRV_MQTT_STATUS="major_outage"
+            SRV_MQTT_DETAIL="Porta 1883 non raggiungibile (timeout o connessione rifiutata)"
           fi
 
-          # ── Count outages over 6 services ───────────────────────────────
+          # ── Conteggio outage sui 6 servizi ────────────────────────────
           OUTAGE_COUNT=0
           for s in "$SRV_API_GESTIONALE_STATUS" "$SRV_API_IOT_STATUS" \
                    "$SRV_WEB_GESTIONALE_STATUS" "$SRV_WEB_IOT_STATUS" \
@@ -122,87 +158,97 @@ jobs:
 
           TOTAL=6
           if [ "$OUTAGE_COUNT" -eq 0 ]; then
-            OVERALL_STATUS="operational"
-            OVERALL_MSG="All Systems Operational"
+            OVERALL_STATUS="operational"; OVERALL_MSG="All Systems Operational"
           elif [ "$OUTAGE_COUNT" -eq "$TOTAL" ]; then
-            OVERALL_STATUS="major_outage"
-            OVERALL_MSG="Major System Outage"
+            OVERALL_STATUS="major_outage"; OVERALL_MSG="Major System Outage"
           else
-            OVERALL_STATUS="degraded"
-            OVERALL_MSG="Partial System Outage"
+            OVERALL_STATUS="degraded"; OVERALL_MSG="Partial System Outage"
           fi
 
-          # ── Read existing manual incidents from manual_data.json ────────
-          INCIDENTS_JSON="[]"
-          MANUAL_FILE="status/api/manual_data.json"
-          if [ -f "$MANUAL_FILE" ]; then
-            INCIDENTS_JSON=$(python3 -c "
-          import json, sys
-          with open('$MANUAL_FILE') as f:
-              d = json.load(f)
-          print(json.dumps(d.get('incidents', [])))
-          ")
-          fi
+          # ── Passo tutto a Python via env vars (niente interpolazione di
+          #    testo arbitrario dentro al codice Python: piu' sicuro) ────
+          export NOW OVERALL_STATUS OVERALL_MSG
+          export API_GESTIONALE_PATH API_IOT_PATH WEB_GESTIONALE_PATH WEB_IOT_PATH
+          export SRV_API_GESTIONALE_STATUS SRV_API_GESTIONALE_DETAIL
+          export SRV_API_IOT_STATUS SRV_API_IOT_DETAIL
+          export SRV_WEB_GESTIONALE_STATUS SRV_WEB_GESTIONALE_DETAIL
+          export SRV_WEB_IOT_STATUS SRV_WEB_IOT_DETAIL
+          export SRV_DB_STATUS SRV_DB_DETAIL
+          export SRV_MQTT_STATUS SRV_MQTT_DETAIL
 
-          # ── Write status.json ────────────────────────────────────────────
-          python3 - <<PYEOF
-          import json
+          python3 - <<'PYEOF'
+          import json, os
+
+          def g(key, default=""):
+              return os.environ.get(key, default)
+
+          MANUAL_FILE = "status/api/manual_data.json"
+          incidents = []
+          if os.path.exists(MANUAL_FILE):
+              with open(MANUAL_FILE) as f:
+                  incidents = json.load(f).get("incidents", [])
 
           status = {
-              "overall_status":  "$OVERALL_STATUS",
-              "overall_message": "$OVERALL_MSG",
-              "last_updated":    "$NOW",
+              "overall_status":  g("OVERALL_STATUS"),
+              "overall_message": g("OVERALL_MSG"),
+              "last_updated":    g("NOW"),
               "services": [
                   {
                       "id":          "srv_api_gestionale",
                       "name":        "Gestionale API",
-                      "description": "Gestionale REST API — FastAPI ($API_GESTIONALE_PATH)",
-                      "status":      "$SRV_API_GESTIONALE_STATUS",
-                      "uptime":      100.00
+                      "description": f"Gestionale REST API — FastAPI ({g('API_GESTIONALE_PATH')})",
+                      "status":      g("SRV_API_GESTIONALE_STATUS"),
+                      "uptime":      100.00,
+                      "detail":      g("SRV_API_GESTIONALE_DETAIL"),
                   },
                   {
                       "id":          "srv_api_iot",
                       "name":        "IoT API",
-                      "description": "IoT REST API — FastAPI ($API_IOT_PATH)",
-                      "status":      "$SRV_API_IOT_STATUS",
-                      "uptime":      100.00
+                      "description": f"IoT REST API — FastAPI ({g('API_IOT_PATH')})",
+                      "status":      g("SRV_API_IOT_STATUS"),
+                      "uptime":      100.00,
+                      "detail":      g("SRV_API_IOT_DETAIL"),
                   },
                   {
                       "id":          "srv_web_gestionale",
                       "name":        "Gestionale Dashboard",
-                      "description": "Gestionale web panel — Apache ($WEB_GESTIONALE_PATH)",
-                      "status":      "$SRV_WEB_GESTIONALE_STATUS",
-                      "uptime":      100.00
+                      "description": f"Gestionale web panel — Apache ({g('WEB_GESTIONALE_PATH')})",
+                      "status":      g("SRV_WEB_GESTIONALE_STATUS"),
+                      "uptime":      100.00,
+                      "detail":      g("SRV_WEB_GESTIONALE_DETAIL"),
                   },
                   {
                       "id":          "srv_web_iot",
                       "name":        "IoT Dashboard",
-                      "description": "IoT web panel — Apache ($WEB_IOT_PATH)",
-                      "status":      "$SRV_WEB_IOT_STATUS",
-                      "uptime":      100.00
+                      "description": f"IoT web panel — Apache ({g('WEB_IOT_PATH')})",
+                      "status":      g("SRV_WEB_IOT_STATUS"),
+                      "uptime":      100.00,
+                      "detail":      g("SRV_WEB_IOT_DETAIL"),
                   },
                   {
                       "id":          "srv_db",
                       "name":        "Database",
                       "description": "Data storage and retrieval — MySQL/MariaDB (port 3306)",
-                      "status":      "$SRV_DB_STATUS",
-                      "uptime":      100.00
+                      "status":      g("SRV_DB_STATUS"),
+                      "uptime":      100.00,
+                      "detail":      g("SRV_DB_DETAIL"),
                   },
                   {
                       "id":          "srv_mqtt",
                       "name":        "IoT Gateway (MQTT)",
                       "description": "Device telemetry and command network — Mosquitto MQTT (port 1883)",
-                      "status":      "$SRV_MQTT_STATUS",
-                      "uptime":      100.00
-                  }
+                      "status":      g("SRV_MQTT_STATUS"),
+                      "uptime":      100.00,
+                      "detail":      g("SRV_MQTT_DETAIL"),
+                  },
               ],
-              "incidents": json.loads('$INCIDENTS_JSON')
+              "incidents": incidents,
           }
 
           with open("status/api/status.json", "w") as f:
               json.dump(status, f, indent=2)
 
-          print("status.json written — overall:", "$OVERALL_STATUS")
+          print("status.json written — overall:", g("OVERALL_STATUS"))
           PYEOF
 
       - name: Commit and push if changed
