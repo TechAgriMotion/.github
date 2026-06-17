@@ -261,6 +261,16 @@ h2 {
 .badge.degraded { background: var(--glow-degraded); color: var(--color-degraded); }
 .badge.outage { background: var(--glow-outage); color: var(--color-outage); }
 
+.service-detail {
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    padding: 0.45rem 0.7rem;
+    border-radius: 6px;
+    line-height: 1.4;
+}
+.service-detail.degraded { background: var(--glow-degraded); color: var(--color-degraded); }
+.service-detail.outage   { background: var(--glow-outage);   color: var(--color-outage); }
+
 .service-desc {
     color: var(--text-secondary);
     font-size: 0.875rem;
