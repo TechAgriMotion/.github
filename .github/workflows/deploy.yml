@@ -3,9 +3,9 @@ name: Status Check & Deploy
 on:
   push:
     branches: ["main"]
-  schedule:
+  #schedule:
     # Ogni 5 minuti (GitHub esegue "best effort": il timing reale puo' variare)
-    - cron: '*/30 * * * *'
+    #- cron: '*/30 * * * *'
   workflow_dispatch:
 
 # contents: write -> per commitare status.json
